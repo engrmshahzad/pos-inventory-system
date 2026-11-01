@@ -52,32 +52,33 @@ class CashRegisterService
     }
 
     /**
-     * Expected cash = opening + cash taken in (sales + due received) − cash paid out (refunds, Phase 4).
+     * Expected cash = opening + cash received (sales, due received, supplier refunds)
+     *               − cash paid out (sale refunds, supplier payments) during this shift.
      */
     public function summary(CashRegister $register): array
     {
-        $byMethod = Payment::where('cash_register_id', $register->id)
+        $rows = Payment::where('cash_register_id', $register->id)
             ->selectRaw('method, type, SUM(amount) as total')
             ->groupBy('method', 'type')
             ->get();
 
-        $in = fn (string $method) => (float) $byMethod->where('method', $method)->where('type', '!=', 'refund')->sum('total');
-        $refunds = (float) $byMethod->where('method', 'cash')->where('type', 'refund')->sum('total');
+        $in = fn (string $method) => (float) $rows->where('method', $method)->whereIn('type', Payment::TYPES_IN)->sum('total');
+        $cashOut = (float) $rows->where('method', 'cash')->whereIn('type', Payment::TYPES_OUT)->sum('total');
+        $refunds = (float) $rows->where('method', 'cash')->where('type', 'refund')->sum('total');
 
         $sales = $register->sales()->where('status', 'completed');
-
-        $methods = collect(Payment::METHODS)->map(fn ($label, $key) => ['label' => $label, 'total' => $in($key)]);
 
         return [
             'opening_cash' => (float) $register->opening_cash,
             'cash_in' => $in('cash'),
             'cash_refunds' => $refunds,
-            'expected_cash' => round((float) $register->opening_cash + $in('cash') - $refunds, 2),
-            'methods' => $methods,
+            'cash_paid_out' => $cashOut - $refunds,
+            'expected_cash' => round((float) $register->opening_cash + $in('cash') - $cashOut, 2),
+            'methods' => collect(Payment::METHODS)->map(fn ($label, $key) => ['label' => $label, 'total' => $in($key)]),
             'sales_count' => (clone $sales)->count(),
             'sales_total' => (float) (clone $sales)->sum('grand_total'),
             'credit_given' => (float) (clone $sales)->sum('due_amount'),
-            'received_due' => (float) $byMethod->where('type', 'customer_receipt')->sum('total'),
+            'received_due' => (float) $rows->where('type', 'customer_receipt')->sum('total'),
         ];
     }
 }

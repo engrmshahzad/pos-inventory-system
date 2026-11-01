@@ -8,6 +8,9 @@
         :breadcrumbs="['Sales' => null, 'Sales List' => route('sales.index'), $sale->invoice_no => null]">
         <x-button :href="route('sales.receipt', $sale)" target="_blank" variant="outline" icon="receipt">Receipt</x-button>
         <x-button :href="route('sales.pdf', $sale)" target="_blank" variant="outline" icon="file-text">A4 PDF</x-button>
+        @can('sales.return')
+            <x-button :href="route('sale-returns.create', ['invoice' => $sale->invoice_no])" variant="outline" icon="undo">Return</x-button>
+        @endcan
         @can('receivePayment', $sale)
             <x-button icon="banknote" variant="success" @click="$dispatch('open-modal', 'receive-payment')">Receive Payment</x-button>
         @endcan
@@ -94,6 +97,16 @@
 
             <x-card title="Payments" padding="p-0">
                 <ul class="divide-y divide-line">
+                    @foreach ($sale->allocations as $allocation)
+                        <li class="flex items-center gap-3 px-6 py-4">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><x-icon name="coins" size="w-4 h-4" /></span>
+                            <div class="min-w-0 flex-1">
+                                <a href="{{ route('payments.show', $allocation->payment_id) }}" class="font-medium text-heading hover:text-primary">{{ $allocation->payment->payment_no }}</a>
+                                <p class="text-xs text-muted">{{ $allocation->payment->paid_at->format('d M Y') }} · {{ $allocation->payment->method_label }} · from khata payment</p>
+                            </div>
+                            <p class="font-semibold tabular text-heading">{{ money($allocation->amount, true) }}</p>
+                        </li>
+                    @endforeach
                     @forelse ($sale->payments->sortBy('paid_at') as $payment)
                         <li class="flex items-center gap-3 px-6 py-4">
                             <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10 text-emerald-600"><x-icon name="banknote" size="w-4 h-4" /></span>
@@ -104,10 +117,25 @@
                             <p class="font-semibold tabular text-heading">{{ money($payment->amount, true) }}</p>
                         </li>
                     @empty
-                        <li><x-empty-state icon="wallet" title="No payments yet" description="This sale was made fully on credit." /></li>
+                        @if ($sale->allocations->isEmpty())
+                            <li><x-empty-state icon="wallet" title="No payments yet" description="This sale was made fully on credit." /></li>
+                        @endif
                     @endforelse
                 </ul>
             </x-card>
+
+            @if ($sale->returns->isNotEmpty())
+                <x-card title="Returns" padding="p-0">
+                    <ul class="divide-y divide-line">
+                        @foreach ($sale->returns as $r)
+                            <li class="flex items-center justify-between px-6 py-3.5">
+                                <div><a href="{{ route('sale-returns.show', $r) }}" class="font-medium text-heading hover:text-primary">{{ $r->return_no }}</a><p class="text-xs text-muted">{{ $r->returned_at->format('d M Y') }} · {{ $r->refund_label }}</p></div>
+                                <span class="font-semibold tabular text-warning">-{{ money($r->total, true) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
         </div>
     </div>
 

@@ -20,6 +20,7 @@
                             <div class="flex justify-between py-2.5"><dt class="text-muted">{{ $method['label'] }}</dt><dd class="font-semibold tabular text-heading">{{ money($method['total'], true) }}</dd></div>
                         @endforeach
                         <div class="flex justify-between py-2.5"><dt class="text-muted">Credit given (udhaar)</dt><dd class="font-semibold tabular text-danger">{{ money($summary['credit_given'], true) }}</dd></div>
+                        <div class="flex justify-between py-2.5"><dt class="text-muted">Cash refunds / paid out</dt><dd class="font-semibold tabular text-danger">-{{ money($summary['cash_refunds'] + $summary['cash_paid_out'], true) }}</dd></div>
                         <div class="flex justify-between py-2.5"><dt class="text-muted">Due received</dt><dd class="font-semibold tabular text-heading">{{ money($summary['received_due'], true) }}</dd></div>
                     </dl>
                 </x-card>

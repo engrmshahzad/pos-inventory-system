@@ -74,6 +74,16 @@ class Sale extends Model
         return $this->morphMany(Payment::class, 'payable');
     }
 
+    public function allocations(): MorphMany
+    {
+        return $this->morphMany(PaymentAllocation::class, 'allocatable');
+    }
+
+    public function returns(): HasMany
+    {
+        return $this->hasMany(SaleReturn::class);
+    }
+
     public function scopeCompleted(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_COMPLETED);

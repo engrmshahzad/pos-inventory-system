@@ -93,7 +93,7 @@
                                 <a href="{{ route('sales.receipt', $sale) }}" target="_blank" class="dropdown-item"><x-icon name="receipt" size="w-4 h-4" /> Print receipt</a>
                                 <a href="{{ route('sales.pdf', $sale) }}" target="_blank" class="dropdown-item"><x-icon name="file-text" size="w-4 h-4" /> A4 invoice (PDF)</a>
                                 @can('sales.return')
-                                    <a href="{{ route('sale-returns.index') }}" class="dropdown-item"><x-icon name="undo" size="w-4 h-4" /> Return <span class="ml-auto text-[10px] text-muted">Phase 4</span></a>
+                                    <a href="{{ route('sale-returns.create', ['invoice' => $sale->invoice_no]) }}" class="dropdown-item"><x-icon name="undo" size="w-4 h-4" /> Return items</a>
                                 @endcan
                             </x-slot>
                         </x-dropdown>

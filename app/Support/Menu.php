@@ -39,7 +39,7 @@ class Menu
                 ['label' => 'Suppliers', 'route' => 'suppliers.index', 'icon' => 'factory', 'can' => 'suppliers.view'],
             ],
             'Finance' => [
-                ['label' => 'Payments', 'route' => 'payments.index', 'icon' => 'wallet', 'can' => 'payments.view'],
+                ['label' => 'Payments', 'route' => 'payments.index', 'icon' => 'coins', 'can' => 'payments.view'],
                 ['label' => 'Expenses', 'route' => 'expenses.index', 'icon' => 'banknote', 'can' => 'expenses.view'],
             ],
             'Reports' => [

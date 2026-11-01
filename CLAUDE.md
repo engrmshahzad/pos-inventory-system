@@ -6,7 +6,7 @@
 ## Progress
 - [x] Phase 1
 - [x] Phase 2
-- [ ] Phase 3
+- [x] Phase 3
 - [ ] Phase 4
 - [ ] Phase 5
 - [ ] Phase 6
@@ -24,4 +24,8 @@
 - `Product::withStock($branchId)` adds `stock_qty` (null branch = all branches); `products.search` returns JSON for Tom Select and the POS.
 - Model changes are logged by the `LogsActivity` trait; use `activity()` for custom events.
 - UI: reuse Blade components in `resources/views/components` (x-card, x-button, x-input, x-select, x-table, x-drawer, ...). See /ui-kit.
+- Purchases via `PurchaseService` (received = stock + supplier payable; ordered waits for `receive()`; product cost = latest purchase cost). General payments via `PaymentService` (allocates oldest-first or manually via `payment_allocations`). Returns via `SaleReturnService` / `PurchaseReturnService`.
+- `customers.balance` / `suppliers.balance` are cached running balances; `LedgerService` rebuilds them from documents — keep both in sync in every new money flow (the tests compare them).
+- Customers and suppliers are shared by all branches; branch documents (sales, purchases, returns, payments) are branch-scoped via `visibleTo()` scopes and `Controller::ensureBranchAccess()`.
+- Blade gotcha: never put a directive directly after `</x-slot>` on one line (`</x-slot>@endif` breaks compilation) — use a new line.
 - Tests: `php artisan test` (SQLite in-memory). Demo logins: owner@pos.test / password.

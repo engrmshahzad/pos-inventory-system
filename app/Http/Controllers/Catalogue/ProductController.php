@@ -154,9 +154,9 @@ class ProductController extends Controller
         $term = trim((string) $request->input('q'));
 
         $products = Product::query()
-            ->select(['products.id', 'products.name', 'products.sku', 'products.barcode', 'products.sale_price', 'products.unit_id'])
+            ->select(['products.id', 'products.name', 'products.sku', 'products.barcode', 'products.sale_price', 'products.purchase_price', 'products.tax_percent', 'products.track_expiry', 'products.unit_id'])
             ->withStock($branchId)
-            ->with('unit:id,short_name')
+            ->with('unit:id,short_name,allow_decimal')
             ->when($request->boolean('active_only', true), fn ($q) => $q->active())
             ->when($term !== '', fn (Builder $q) => $q->where(fn ($q) => $q->where('barcode', $term)->orWhere('sku', $term)
                 ->orWhere('name', 'like', "%{$term}%")->orWhere('sku', 'like', "{$term}%")))
@@ -173,6 +173,10 @@ class ProductController extends Controller
                 'price_label' => money($p->sale_price),
                 'stock' => (float) $p->stock_qty,
                 'unit' => $p->unit?->short_name,
+                'decimal' => (bool) $p->unit?->allow_decimal,
+                'cost' => (float) $p->purchase_price,
+                'tax_percent' => (float) $p->tax_percent,
+                'track_expiry' => (bool) $p->track_expiry,
             ]);
 
         return response()->json($products);

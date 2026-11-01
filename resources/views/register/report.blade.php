@@ -48,6 +48,7 @@
             <tr><td>Opening cash</td><td>{{ money($summary['opening_cash'], true) }}</td></tr>
             <tr><td>+ Cash taken</td><td>{{ money($summary['cash_in'], true) }}</td></tr>
             <tr><td>- Cash refunds</td><td>{{ money($summary['cash_refunds'], true) }}</td></tr>
+            <tr><td>- Other cash paid out</td><td>{{ money($summary['cash_paid_out'], true) }}</td></tr>
             <tr class="big"><td>Expected</td><td>{{ money($register->expected_cash ?? $summary['expected_cash'], true) }}</td></tr>
             @if ($register->counted_cash !== null)
                 <tr class="big"><td>Counted</td><td>{{ money($register->counted_cash, true) }}</td></tr>

@@ -80,7 +80,7 @@ class SaleController extends Controller
         $this->authorize('view', $sale);
         abort_if($sale->status !== Sale::STATUS_COMPLETED, 404);
 
-        $sale->load(['items.product.unit', 'payments.user', 'customer', 'branch', 'user']);
+        $sale->load(['items.product.unit', 'payments.user', 'customer', 'branch', 'user', 'allocations.payment', 'returns']);
 
         return view('sales.show', ['sale' => $sale]);
     }

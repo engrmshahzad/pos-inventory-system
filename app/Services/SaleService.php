@@ -149,6 +149,7 @@ class SaleService
             }
 
             $payment = $sale->payments()->create([
+                'payment_no' => $this->numbers->next('RCV', $sale->branch),
                 'branch_id' => $sale->branch_id,
                 'type' => 'customer_receipt',
                 'customer_id' => $sale->customer_id,
@@ -156,7 +157,7 @@ class SaleService
                 'amount' => $amount,
                 'reference' => $reference,
                 'note' => $note,
-                'cash_register_id' => CashRegister::openFor($user, $sale->branch_id)?->id,
+                'cash_register_id' => $method === 'cash' ? CashRegister::openFor($user, $sale->branch_id)?->id : null,
                 'user_id' => $user->id,
                 'paid_at' => now(),
             ]);

@@ -35,6 +35,19 @@ class Customer extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function returns(): HasMany
+    {
+        return $this->hasMany(SaleReturn::class);
+    }
+
+    public function getReminderUrlAttribute(): string
+    {
+        $text = "Assalam-o-Alaikum {$this->name},\n\nThis is a friendly reminder from ".settings('business_name', config('app.name'))
+            .'. Your outstanding balance is *'.money($this->balance, true)."*.\n\nPlease clear it at your earliest convenience. Thank you!";
+
+        return 'https://wa.me/'.$this->whatsapp_number.'?text='.rawurlencode($text);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
