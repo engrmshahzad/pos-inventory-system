@@ -29,6 +29,7 @@ class Menu
             'Sales' => [
                 ['label' => 'POS', 'route' => 'pos.index', 'icon' => 'shopping-cart', 'can' => 'pos.access', 'kbd' => 'F2'],
                 ['label' => 'Sales List', 'route' => 'sales.index', 'icon' => 'receipt', 'can' => 'sales.view'],
+                ['label' => 'Cash Register', 'route' => 'register.index', 'icon' => 'wallet', 'can' => 'pos.access'],
                 ['label' => 'Sale Returns', 'route' => 'sale-returns.index', 'icon' => 'undo', 'can' => 'sales.return'],
                 ['label' => 'Customers', 'route' => 'customers.index', 'icon' => 'users', 'can' => 'customers.view'],
             ],

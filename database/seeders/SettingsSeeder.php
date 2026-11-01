@@ -22,6 +22,10 @@ class SettingsSeeder extends Seeder
             ],
             'pos' => [
                 'allow_negative_stock' => '0',
+                'receipt_size' => '80',            // 58 or 80 (mm)
+                'receipt_header' => 'Quality products, fair prices',
+                'receipt_footer' => 'Thank you for shopping with us! No return without receipt.',
+                'beep_on_scan' => '1',
             ],
         ];
 

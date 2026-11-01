@@ -12,6 +12,9 @@ use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\Sales\CashRegisterController;
+use App\Http\Controllers\Sales\PosController;
+use App\Http\Controllers\Sales\SaleController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +62,35 @@ Route::middleware('auth')->group(function () {
         Route::get('stock/movements', [StockController::class, 'movements'])->name('stock.movements');
     });
 
+    // Sales: POS (full-screen) and its JSON endpoints
+    Route::middleware('permission:pos.access')->prefix('pos')->name('pos.')->group(function () {
+        Route::get('/', [PosController::class, 'index'])->name('index');
+        Route::get('products', [PosController::class, 'products'])->name('products');
+        Route::get('lookup', [PosController::class, 'lookup'])->name('lookup');
+        Route::post('checkout', [PosController::class, 'checkout'])->name('checkout');
+        Route::post('hold', [PosController::class, 'hold'])->name('hold');
+        Route::get('held', [PosController::class, 'held'])->name('held');
+        Route::get('held/{sale}', [PosController::class, 'resume'])->name('held.resume');
+        Route::delete('held/{sale}', [PosController::class, 'destroyHeld'])->name('held.destroy');
+        Route::get('customers', [PosController::class, 'customers'])->name('customers');
+        Route::post('customers', [PosController::class, 'storeCustomer'])->name('customers.store');
+    });
+
+    Route::middleware('permission:pos.access')->prefix('cash-register')->name('register.')->group(function () {
+        Route::get('/', [CashRegisterController::class, 'index'])->name('index');
+        Route::post('open', [CashRegisterController::class, 'open'])->name('open');
+        Route::post('{register}/close', [CashRegisterController::class, 'close'])->name('close');
+        Route::get('{register}/report', [CashRegisterController::class, 'report'])->name('report');
+    });
+
+    Route::middleware('permission:sales.view')->group(function () {
+        Route::get('sales', [SaleController::class, 'index'])->name('sales.index');
+        Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
+        Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
+        Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->name('sales.pdf');
+        Route::post('sales/{sale}/payments', [SaleController::class, 'receivePayment'])->name('sales.payments.store');
+    });
+
     // Settings
     Route::middleware('permission:branches.manage')->group(function () {
         Route::resource('branches', BranchController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -76,8 +108,6 @@ Route::middleware('auth')->group(function () {
     // Modules of later phases show a "Coming soon" page until they are built.
     $comingSoon = [
         // uri, route name, permission, label, phase, icon
-        ['pos', 'pos.index', 'pos.access', 'POS', 3, 'shopping-cart'],
-        ['sales', 'sales.index', 'sales.view', 'Sales', 3, 'receipt'],
         ['customers', 'customers.index', 'customers.view', 'Customers', 4, 'users'],
         ['sale-returns', 'sale-returns.index', 'sales.return', 'Sale Returns', 4, 'undo'],
         ['purchases', 'purchases.index', 'purchases.view', 'Purchases', 4, 'truck'],

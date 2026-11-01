@@ -4,6 +4,7 @@ import Alpine from 'alpinejs';
 import ApexCharts from 'apexcharts';
 import TomSelect from 'tom-select';
 import Swal from 'sweetalert2';
+import posApp from './pos';
 
 window.Alpine = Alpine;
 window.ApexCharts = ApexCharts;
@@ -160,6 +161,8 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
+
+document.addEventListener('alpine:init', () => Alpine.data('posApp', posApp));
 
 /* ---------- Command palette (Ctrl/Cmd + K) ---------- */
 document.addEventListener('alpine:init', () => {
