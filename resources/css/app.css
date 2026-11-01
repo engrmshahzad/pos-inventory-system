@@ -1,0 +1,124 @@
+@import 'tom-select/dist/css/tom-select.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens as RGB triplets so Tailwind opacity modifiers (bg-primary/10) work. */
+@layer base {
+    :root {
+        --color-primary: 79 70 229;          /* #4F46E5 */
+        --color-primary-hover: 67 56 202;    /* #4338CA */
+        --color-primary-soft: 238 242 255;   /* #EEF2FF */
+        --color-success: 16 185 129;         /* #10B981 */
+        --color-warning: 245 158 11;         /* #F59E0B */
+        --color-danger: 239 68 68;           /* #EF4444 */
+        --color-info: 14 165 233;            /* #0EA5E9 */
+
+        --bg-page: 245 247 251;              /* #F5F7FB */
+        --bg-card: 255 255 255;
+        --bg-subtle: 248 250 252;            /* table headers, inputs hover */
+        --bg-sidebar: 15 23 42;              /* #0F172A */
+        --border-line: 226 232 240;          /* #E2E8F0 */
+        --text-heading: 15 23 42;            /* #0F172A */
+        --text-body: 71 85 105;              /* #475569 */
+        --text-muted: 148 163 184;           /* #94A3B8 */
+        color-scheme: light;
+    }
+
+    .dark {
+        --color-primary-soft: 30 27 75;
+        --bg-page: 11 17 32;                 /* #0B1120 */
+        --bg-card: 17 24 39;                 /* #111827 */
+        --bg-subtle: 21 30 47;
+        --bg-sidebar: 10 15 28;
+        --border-line: 31 41 55;             /* #1F2937 */
+        --text-heading: 243 244 246;
+        --text-body: 229 231 235;            /* #E5E7EB */
+        --text-muted: 148 163 184;
+        color-scheme: dark;
+    }
+
+    html { -webkit-font-smoothing: antialiased; }
+    body { @apply bg-page text-body text-sm font-sans; }
+    h1, h2, h3, h4 { @apply text-heading; }
+    [x-cloak] { display: none !important; }
+    :focus-visible { @apply outline-none ring-[3px] ring-primary/30; }
+}
+
+@layer components {
+    .card { @apply bg-card border border-line rounded-2xl shadow-card; }
+    .card-hover { @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-card-hover; }
+
+    .form-label { @apply block text-[13px] font-medium text-heading mb-1.5; }
+    .form-control {
+        @apply block w-full h-input rounded-lg border border-line bg-card text-heading text-sm px-3.5
+               placeholder:text-muted transition duration-150
+               focus:border-primary focus:ring-[3px] focus:ring-primary/20 focus:outline-none
+               disabled:opacity-60 disabled:cursor-not-allowed;
+    }
+    textarea.form-control { @apply h-auto py-2.5; }
+    .form-control.is-invalid { @apply border-danger focus:border-danger focus:ring-danger/20; }
+    .form-help { @apply mt-1.5 text-xs text-muted; }
+    .form-error { @apply mt-1.5 text-xs font-medium text-danger; }
+    .form-checkbox { @apply h-4 w-4 rounded border-line bg-card text-primary focus:ring-primary/30 focus:ring-offset-0; }
+
+    .section-label { @apply text-[11px] font-semibold uppercase tracking-wider text-muted; }
+    .kbd {
+        @apply inline-flex items-center justify-center min-w-[22px] h-[20px] px-1.5 rounded-md border border-line
+               bg-subtle text-[10px] font-semibold text-muted font-sans shadow-[inset_0_-1px_0] shadow-line;
+    }
+    .tabular { font-variant-numeric: tabular-nums; }
+
+    .data-table { @apply w-full text-sm; }
+    .data-table thead th {
+        @apply sticky top-0 z-[1] bg-subtle px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted
+               border-b border-line whitespace-nowrap;
+    }
+    .data-table tbody td { @apply px-4 py-3.5 border-b border-line text-body align-middle; }
+    .data-table tbody tr { @apply transition-colors duration-150 hover:bg-subtle; }
+    .data-table tbody tr:last-child td { @apply border-b-0; }
+    .data-table.zebra tbody tr:nth-child(even) { @apply bg-subtle/60; }
+
+    .dropdown-panel { @apply absolute z-40 mt-2 rounded-xl border border-line bg-card p-1.5 shadow-card-hover; }
+    .dropdown-item {
+        @apply flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-body transition
+               hover:bg-subtle hover:text-heading;
+    }
+
+    .skeleton { @apply relative overflow-hidden rounded-md bg-line/70; }
+    .skeleton::after {
+        content: '';
+        @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent;
+    }
+
+    .hero-pattern {
+        background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.18) 1px, transparent 0);
+        background-size: 22px 22px;
+    }
+}
+
+/* Tom Select themed to match inputs and dark mode */
+.ts-wrapper.single .ts-control, .ts-wrapper.multi .ts-control {
+    @apply min-h-[42px] rounded-lg border-line bg-card text-heading text-sm px-3.5 py-2 shadow-none;
+}
+.ts-wrapper.single .ts-control { background-image: none; }
+.ts-wrapper.focus .ts-control { @apply border-primary ring-[3px] ring-primary/20; }
+.ts-control input { @apply text-heading placeholder:text-muted; }
+.ts-dropdown { @apply mt-1 rounded-lg border-line bg-card text-body shadow-card-hover overflow-hidden; }
+.ts-dropdown .option { @apply px-3.5 py-2; }
+.ts-dropdown .active { @apply bg-primary/10 text-heading; }
+.ts-wrapper.multi .ts-control > div { @apply rounded-md bg-primary/10 text-primary border-0; }
+
+/* SweetAlert2 in dark mode */
+.dark .swal2-popup { background: rgb(var(--bg-card)); color: rgb(var(--text-body)); }
+.dark .swal2-title { color: rgb(var(--text-heading)); }
+.swal2-popup { border-radius: 1rem !important; font-family: Inter, system-ui, sans-serif; }
+.swal2-styled { border-radius: .5rem !important; font-weight: 600 !important; font-size: .875rem !important; padding: .625rem 1.25rem !important; }
+
+/* ApexCharts tooltip in dark mode */
+.dark .apexcharts-tooltip { background: rgb(var(--bg-card)) !important; border-color: rgb(var(--border-line)) !important; color: rgb(var(--text-body)); }
+.dark .apexcharts-tooltip-title { background: rgb(var(--bg-subtle)) !important; border-color: rgb(var(--border-line)) !important; }
+
+/* Scrollbars */
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.35) transparent; }
