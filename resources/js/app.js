@@ -108,7 +108,8 @@ document.addEventListener('submit', async (event) => {
 document.addEventListener('submit', (event) => {
     const form = event.target;
     if (event.defaultPrevented || !(form instanceof HTMLFormElement)) return;
-    form.querySelectorAll('button[type=submit][data-loading]').forEach((btn) => {
+    const outside = form.id ? document.querySelectorAll(`button[form="${form.id}"][data-loading]`) : [];
+    [...form.querySelectorAll('button[type=submit][data-loading]'), ...outside].forEach((btn) => {
         btn.setAttribute('data-busy', '1');
         btn.disabled = true;
     });

@@ -36,6 +36,11 @@ class Branch extends Model
         return $this->hasMany(User::class);
     }
 
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(BranchStock::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);

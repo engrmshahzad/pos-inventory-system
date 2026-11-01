@@ -7,6 +7,7 @@
     'trendLabel' => 'vs yesterday',
     'sparkline' => null,      // array of numbers
     'href' => null,
+    'hint' => null,           // small text under the value when there is no trend
 ])
 @php
     $tints = [
@@ -51,5 +52,7 @@
     <p class="mt-1 whitespace-nowrap text-[24px] font-bold leading-8 tabular text-heading 2xl:text-kpi">{{ $value }}</p>
     @if ($trend !== null)
         <p class="mt-1 text-xs text-muted">{{ $trendLabel }}</p>
+    @elseif ($hint)
+        <p class="mt-1 text-xs text-muted">{{ $hint }}</p>
     @endif
 </{{ $tag }}>

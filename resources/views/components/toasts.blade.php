@@ -4,8 +4,11 @@
         ->filter(fn ($type) => session()->has($type))
         ->map(fn ($type) => ['type' => $type, 'message' => session($type)])
         ->values();
-    if ($errors->has('branch')) {
-        $flash->push(['type' => 'error', 'message' => $errors->first('branch')]);
+    // Action-level errors (e.g. "cannot delete") are shown as toasts rather than next to a field.
+    foreach (['action', 'branch'] as $key) {
+        if ($errors->has($key)) {
+            $flash->push(['type' => 'error', 'message' => $errors->first($key)]);
+        }
     }
 @endphp
 

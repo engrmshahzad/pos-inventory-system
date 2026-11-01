@@ -99,6 +99,7 @@
 }
 
 /* Tom Select themed to match inputs and dark mode */
+.ts-wrapper.form-control { @apply h-auto border-0 bg-transparent p-0 shadow-none ring-0; }
 .ts-wrapper.single .ts-control, .ts-wrapper.multi .ts-control {
     @apply min-h-[42px] rounded-lg border-line bg-card text-heading text-sm px-3.5 py-2 shadow-none;
 }

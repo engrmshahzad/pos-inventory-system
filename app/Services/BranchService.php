@@ -8,12 +8,15 @@ use Illuminate\Validation\ValidationException;
 
 class BranchService
 {
+    public function __construct(protected StockService $stock)
+    {
+    }
+
     public function create(array $data): Branch
     {
         return DB::transaction(function () use ($data) {
             $branch = Branch::create($data);
-
-            // Phase 2: create branch_stock rows (qty 0) for every product here.
+            $this->stock->ensureRowsForBranch($branch);
 
             return $branch;
         });

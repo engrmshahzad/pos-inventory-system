@@ -2,10 +2,17 @@
 
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchSwitchController;
+use App\Http\Controllers\Catalogue\BarcodeController;
+use App\Http\Controllers\Catalogue\BrandController;
+use App\Http\Controllers\Catalogue\CategoryController;
+use App\Http\Controllers\Catalogue\ProductController;
+use App\Http\Controllers\Catalogue\ProductImportController;
+use App\Http\Controllers\Catalogue\UnitController;
 use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StockController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +24,40 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Inventory: catalogue
+    Route::middleware('permission:categories.manage')->group(function () {
+        Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('brands', BrandController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('units', UnitController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
+
+    Route::prefix('products')->group(function () {
+        Route::get('search', [ProductController::class, 'search'])->middleware('permission:products.view|pos.access')->name('products.search');
+        Route::get('export', [ProductController::class, 'export'])->middleware('permission:products.view')->name('products.export');
+        Route::post('bulk', [ProductController::class, 'bulk'])->middleware('permission:products.view')->name('products.bulk');
+        Route::get('barcodes', [BarcodeController::class, 'index'])->middleware('permission:products.view')->name('barcodes.index');
+        Route::get('barcodes/print', [BarcodeController::class, 'print'])->middleware('permission:products.view')->name('barcodes.print');
+
+        Route::middleware('permission:products.create')->group(function () {
+            Route::get('import', [ProductImportController::class, 'create'])->name('products.import');
+            Route::get('import/template', [ProductImportController::class, 'template'])->name('products.import.template');
+            Route::post('import', [ProductImportController::class, 'store'])->name('products.import.store');
+        });
+    });
+    Route::get('products', [ProductController::class, 'index'])->middleware('permission:products.view')->name('products.index');
+    Route::get('products/create', [ProductController::class, 'create'])->middleware('permission:products.create')->name('products.create');
+    Route::post('products', [ProductController::class, 'store'])->middleware('permission:products.create')->name('products.store');
+    Route::get('products/{product}', [ProductController::class, 'show'])->middleware('permission:products.view')->name('products.show');
+    Route::get('products/{product}/edit', [ProductController::class, 'edit'])->middleware('permission:products.edit')->name('products.edit');
+    Route::put('products/{product}', [ProductController::class, 'update'])->middleware('permission:products.edit')->name('products.update');
+    Route::delete('products/{product}', [ProductController::class, 'destroy'])->middleware('permission:products.delete')->name('products.destroy');
+
+    // Inventory: stock
+    Route::middleware('permission:stock.view')->group(function () {
+        Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+        Route::get('stock/movements', [StockController::class, 'movements'])->name('stock.movements');
+    });
 
     // Settings
     Route::middleware('permission:branches.manage')->group(function () {
@@ -35,11 +76,6 @@ Route::middleware('auth')->group(function () {
     // Modules of later phases show a "Coming soon" page until they are built.
     $comingSoon = [
         // uri, route name, permission, label, phase, icon
-        ['products', 'products.index', 'products.view', 'Products', 2, 'package'],
-        ['categories', 'categories.index', 'categories.manage', 'Categories', 2, 'folder'],
-        ['brands', 'brands.index', 'categories.manage', 'Brands', 2, 'award'],
-        ['units', 'units.index', 'categories.manage', 'Units', 2, 'ruler'],
-        ['stock', 'stock.index', 'stock.view', 'Stock', 2, 'boxes'],
         ['pos', 'pos.index', 'pos.access', 'POS', 3, 'shopping-cart'],
         ['sales', 'sales.index', 'sales.view', 'Sales', 3, 'receipt'],
         ['customers', 'customers.index', 'customers.view', 'Customers', 4, 'users'],

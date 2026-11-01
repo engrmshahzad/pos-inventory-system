@@ -1,4 +1,4 @@
-@props(['paginator' => null, 'zebra' => false])
+@props(['paginator' => null, 'zebra' => false, 'perPageOptions' => [10, 25, 50, 100]])
 {{-- Slots: toolbar (search/filters), head (<tr><th>..), default (<tr>..), empty (shown when no rows) --}}
 
 <div {{ $attributes->merge(['class' => 'card overflow-hidden']) }}>
@@ -18,7 +18,7 @@
         @endisset
     </div>
 
-    @if ($paginator && $paginator->hasPages() || ($paginator && $paginator->total() > 10))
+    @if ($paginator && ($paginator->hasPages() || $paginator->total() > min($perPageOptions)))
         <div class="flex flex-col gap-3 border-t border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-2 text-xs text-muted">
                 <span>Rows per page</span>
@@ -28,7 +28,7 @@
                     @endforeach
                     <select name="per_page" onchange="this.form.submit()" aria-label="Rows per page"
                         class="h-8 rounded-md border-line bg-card py-0 pl-2 pr-7 text-xs text-heading focus:border-primary focus:ring-primary/20">
-                        @foreach ([10, 25, 50, 100] as $n)
+                        @foreach ($perPageOptions as $n)
                             <option value="{{ $n }}" @selected($paginator->perPage() == $n)>{{ $n }}</option>
                         @endforeach
                     </select>
