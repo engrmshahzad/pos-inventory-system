@@ -6,3 +6,13 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('pos:low-stock-alerts')->dailyAt('08:00');
 Schedule::command('backup:run --only-db --disable-notifications')->dailyAt('23:30');
 Schedule::command('backup:clean --disable-notifications')->dailyAt('23:45');
+
+// Remove background exports older than 2 days.
+Schedule::call(function () {
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+    foreach ($disk->files('exports') as $file) {
+        if ($disk->lastModified($file) < now()->subDays(2)->timestamp) {
+            $disk->delete($file);
+        }
+    }
+})->daily()->name('clean-exports');

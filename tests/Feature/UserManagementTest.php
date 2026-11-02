@@ -19,8 +19,8 @@ class UserManagementTest extends TestCase
             'name' => 'Zain Ali',
             'email' => 'zain@pos.test',
             'phone' => '0300-0000000',
-            'password' => 'secret123',
-            'password_confirmation' => 'secret123',
+            'password' => 'Secret123',
+            'password_confirmation' => 'Secret123',
             'is_active' => '1',
         ];
     }

@@ -53,7 +53,7 @@
                     <td class="whitespace-nowrap tabular">{{ $supplier->phone ?: '—' }}</td>
                     <td>{{ $supplier->city ?: '—' }}</td>
                     <td class="text-right tabular">{{ money($supplier->purchases_total ?? 0) }}</td>
-                    <td class="whitespace-nowrap text-muted">{{ $supplier->last_purchase ? \Illuminate\Support\Carbon::parse($supplier->last_purchase)->format('d M Y') : '—' }}</td>
+                    <td class="whitespace-nowrap text-muted">{{ $supplier->last_purchase ? fmtDate($supplier->last_purchase) : '—' }}</td>
                     <td class="text-right">
                         @if ((float) $supplier->balance > 0)<x-badge color="danger" class="tabular">{{ money($supplier->balance) }}</x-badge>
                         @elseif ((float) $supplier->balance < 0)<x-badge color="info" class="tabular">Advance {{ money(abs((float) $supplier->balance)) }}</x-badge>

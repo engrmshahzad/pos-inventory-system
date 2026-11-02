@@ -11,8 +11,8 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
-        "laravel/framework": "^11.31",
-        "laravel/tinker": "^2.9",
+        "laravel/framework": "^12.0",
+        "laravel/tinker": "^2.10",
         "maatwebsite/excel": "^3.1",
         "picqer/php-barcode-generator": "^3.3",
         "spatie/laravel-backup": "^9.0",
@@ -26,7 +26,7 @@
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0.1"
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {

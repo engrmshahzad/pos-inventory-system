@@ -43,7 +43,8 @@ class UserRequest extends FormRequest
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($target)],
             'phone' => ['nullable', 'string', 'max:30'],
-            'password' => [$target ? 'nullable' : 'required', 'confirmed', Password::min(8)],
+            'password' => [$target ? 'nullable' : 'required', 'confirmed',
+                in_array($this->input('role'), ['owner', 'manager'], true) ? Password::defaults()->mixedCase() : Password::defaults()],
             'role' => ['required', Rule::in(User::ROLES)],
             'branch_id' => [
                 Rule::requiredIf(fn () => in_array($this->input('role'), ['manager', 'cashier'], true)),

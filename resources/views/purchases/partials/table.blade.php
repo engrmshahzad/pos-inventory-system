@@ -9,7 +9,7 @@
                 <a href="{{ route('purchases.show', $purchase) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $purchase->purchase_no }}</a>
                 @if ($purchase->reference_no)<span class="block text-xs text-muted">Ref {{ $purchase->reference_no }}</span>@endif
             </td>
-            <td class="whitespace-nowrap">{{ $purchase->purchase_date->format('d M Y') }}</td>
+            <td class="whitespace-nowrap">{{ fmtDate($purchase->purchase_date) }}</td>
             @if ($showSupplier)<td><span class="font-medium text-heading">{{ $purchase->supplier->name }}</span><span class="block text-xs text-muted">{{ $purchase->supplier->company }}</span></td>@endif
             <td><x-badge color="slate">{{ $purchase->branch->code }}</x-badge></td>
             <td class="text-right tabular">{{ $purchase->items_count }}</td>

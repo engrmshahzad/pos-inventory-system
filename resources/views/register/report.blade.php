@@ -28,8 +28,8 @@
         <hr>
         <table>
             <tr><td>Cashier</td><td>{{ $register->user->name }}</td></tr>
-            <tr><td>Opened</td><td>{{ $register->opened_at->format('d/m/Y h:i A') }}</td></tr>
-            <tr><td>Closed</td><td>{{ $register->closed_at?->format('d/m/Y h:i A') ?? 'OPEN' }}</td></tr>
+            <tr><td>Opened</td><td>{{ fmtDate($register->opened_at, true) }}</td></tr>
+            <tr><td>Closed</td><td>{{ fmtDate($register->closed_at, true) ?? 'OPEN' }}</td></tr>
         </table>
         <hr>
         <table>

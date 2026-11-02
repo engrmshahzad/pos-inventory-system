@@ -28,6 +28,7 @@ class SalePolicy
     public function receivePayment(User $user, Sale $sale): bool
     {
         return $this->view($user, $sale)
+            && $sale->status === Sale::STATUS_COMPLETED
             && ($user->can('payments.create') || $user->can('sales.create'))
             && (float) $sale->due_amount > 0;
     }

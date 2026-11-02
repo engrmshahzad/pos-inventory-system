@@ -41,6 +41,9 @@ class ReportController extends Controller
         return view('reports.show', $this->viewData($report, $ctx, $result) + ['pagedRows' => $rows]);
     }
 
+    /** Exports above this many rows are built in the background (queue) instead of during the request. */
+    public const QUEUE_THRESHOLD = 2000;
+
     public function export(Request $request, string $key, string $format)
     {
         [$report, $ctx] = $this->prepare($request, $key);
@@ -50,12 +53,28 @@ class ReportController extends Controller
 
         activity('exported', "Exported report \"{$report->title}\" as {$format}");
 
+        if ($format === 'xlsx' && $result->rows->count() > self::QUEUE_THRESHOLD) {
+            \App\Jobs\ExportReportJob::dispatch($report->key, $ctx->user->id, $ctx->from->toDateString(), $ctx->to->toDateString(),
+                $ctx->branchId, $ctx->params, $ctx->preset, $data['subtitle']);
+
+            return back()->with('info', number_format($result->rows->count()).' rows — the Excel file is being prepared. You will get a notification with the download link.');
+        }
+
         return match ($format) {
             'xlsx' => Excel::download(new ReportExport($report->title, $data['subtitle'], $result), "{$file}.xlsx"),
             'pdf' => Pdf::loadView('reports.print', $data + ['pdf' => true])
                 ->setPaper('a4', count($result->columns) > 7 ? 'landscape' : 'portrait')->stream("{$file}.pdf"),
             default => view('reports.print', $data + ['pdf' => false]),
         };
+    }
+
+    /** Download a finished background export (only the user who requested it). */
+    public function download(Request $request, string $file)
+    {
+        abort_unless(preg_match('/^u(\d+)-[\w\-]+\.xlsx$/', $file, $m) === 1 && (int) $m[1] === $request->user()->id, 404);
+        abort_unless(\Illuminate\Support\Facades\Storage::disk('local')->exists("exports/{$file}"), 404);
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->download("exports/{$file}");
     }
 
     /** @return array{0: Report, 1: ReportContext} */

@@ -1,6 +1,6 @@
 <x-app-layout :title="$payment->payment_no">
     @php $party = $payment->customer ?? $payment->supplier; @endphp
-    <x-page-header :title="$payment->payment_no" :subtitle="$payment->type_label.' · '.$payment->paid_at->format('d M Y, h:i A').' · '.$payment->branch->name" :breadcrumbs="['Finance' => null, 'Payments' => route('payments.index'), $payment->payment_no => null]">
+    <x-page-header :title="$payment->payment_no" :subtitle="$payment->type_label.' · '.fmtDate($payment->paid_at, true).' · '.$payment->branch->name" :breadcrumbs="['Finance' => null, 'Payments' => route('payments.index'), $payment->payment_no => null]">
         <x-button :href="route('payments.receipt', $payment)" target="_blank" variant="outline" icon="printer">Print receipt</x-button>
     </x-page-header>
     <div class="grid gap-6 xl:grid-cols-3">
@@ -35,7 +35,7 @@
                                 default => ['—', null, null, 0],
                             };
                         @endphp
-                        <tr><td><a href="{{ $url }}" class="font-semibold tabular text-primary">{{ $label }}</a></td><td>{{ $date?->format('d M Y') }}</td><td class="text-right tabular">{{ money($total, true) }}</td><td class="text-right font-semibold tabular text-heading">{{ money($amount, true) }}</td></tr>
+                        <tr><td><a href="{{ $url }}" class="font-semibold tabular text-primary">{{ $label }}</a></td><td>{{ fmtDate($date) }}</td><td class="text-right tabular">{{ money($total, true) }}</td><td class="text-right font-semibold tabular text-heading">{{ money($amount, true) }}</td></tr>
                     @empty
                         <tr><td colspan="4"><x-empty-state icon="file-text" title="Not linked to an invoice" description="Applied to the opening balance or kept as an advance." /></td></tr>
                     @endforelse

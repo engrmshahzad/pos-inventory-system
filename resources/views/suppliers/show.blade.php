@@ -28,7 +28,7 @@
                 <x-stat-card label="Total purchases" :value="money($stats['purchases'])" icon="truck" :hint="$stats['count'].' purchase(s)'" />
                 <x-stat-card label="Total paid" :value="money($stats['paid'])" icon="check-circle" color="success" />
                 <x-stat-card label="Payable now" :value="money(max(0, $balance))" icon="wallet" color="danger" :hint="$balance < 0 ? 'Advance '.money(abs($balance)) : null" />
-                <x-stat-card label="Last purchase" :value="$stats['last'] ? \Illuminate\Support\Carbon::parse($stats['last'])->format('d M Y') : '—'" icon="calendar" color="info" />
+                <x-stat-card label="Last purchase" :value="$stats['last'] ? fmtDate($stats['last']) : '—'" icon="calendar" color="info" />
             </div>
             <x-card title="Details">
                 <dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">

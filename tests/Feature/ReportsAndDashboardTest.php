@@ -162,7 +162,7 @@ class ReportsAndDashboardTest extends TestCase
         Storage::fake('public');
 
         $this->actingAs($owner)->put('/settings/general', [
-            'business_name' => 'Shahzad Mart', 'currency_symbol' => 'PKR', 'number_format' => 'indian', 'date_format' => 'd/m/Y', 'timezone' => 'Asia/Karachi',
+            'business_name' => 'Shahzad Mart', 'currency_symbol' => 'PKR', 'number_format' => 'indian', 'date_format' => 'd/m/Y', 'timezone' => 'Asia/Karachi', 'session_timeout' => 60,
             'business_logo' => UploadedFile::fake()->image('logo.png'),
         ])->assertSessionHasNoErrors();
 
@@ -217,5 +217,29 @@ class ReportsAndDashboardTest extends TestCase
         $this->actingAs($this->hydManager)->get('/dashboard')->assertOk()->assertSee("Today's Profit");
         $this->actingAs($this->makeUser('cashier', $this->hyd))->get('/dashboard')->assertOk()->assertSee('Open POS')->assertDontSee("Today's Profit");
         $this->actingAs($this->hydManager)->post('/dashboard/refresh')->assertRedirect();
+    }
+
+    public function test_large_exports_are_queued_and_only_the_owner_can_download(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+        $owner = $this->owner();
+        $rows = collect(range(1, \App\Http\Controllers\ReportController::QUEUE_THRESHOLD + 1))->map(fn ($i) => [
+            'branch_id' => $this->hyd->id, 'product_id' => $this->tea->id, 'type' => 'adjustment', 'quantity' => 1, 'balance_after' => 1, 'unit_cost' => 1, 'created_at' => now(),
+        ]);
+        foreach ($rows->chunk(500) as $chunk) {
+            \Illuminate\Support\Facades\DB::table('stock_movements')->insert($chunk->all());
+        }
+
+        $this->actingAs($owner)->get('/reports/stock-movements/export/xlsx?preset=today')->assertRedirect()->assertSessionHas('info');
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\ExportReportJob::class);
+
+        // Run the job for real and download the file
+        \Illuminate\Support\Facades\Storage::fake('local');
+        (new \App\Jobs\ExportReportJob('stock-movements', $owner->id, today()->toDateString(), today()->toDateString(), null, [], 'today', 'All'))->handle();
+        $note = $owner->notifications()->first();
+        $this->assertSame('Your export is ready', $note->data['title']);
+        $file = basename($note->data['url']);
+        $this->actingAs($owner)->get("/exports/{$file}")->assertOk()->assertDownload();
+        $this->actingAs($this->hydManager)->get("/exports/{$file}")->assertNotFound();
     }
 }

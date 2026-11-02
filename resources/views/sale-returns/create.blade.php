@@ -20,7 +20,7 @@
             <input type="hidden" name="sale_id" value="{{ $sale->id }}">
             <div class="grid gap-6 xl:grid-cols-3">
                 <div class="xl:col-span-2">
-                    <x-card :title="$sale->invoice_no" :subtitle="$sale->sold_at->format('d M Y, h:i A').' · '.$sale->branch->name.' · '.($sale->customer?->name ?? 'Walk-in Customer').' · '.money($sale->grand_total, true)" padding="p-0">
+                    <x-card :title="$sale->invoice_no" :subtitle="fmtDate($sale->sold_at, true).' · '.$sale->branch->name.' · '.($sale->customer?->name ?? 'Walk-in Customer').' · '.money($sale->grand_total, true)" padding="p-0">
                         <x-slot name="actions"><x-button size="sm" variant="secondary" @click="all()">Return all</x-button></x-slot>
                         @error('items')<p class="mx-6 mt-4 rounded-lg bg-danger/10 px-3 py-2 text-sm font-medium text-red-600">{{ $message }}</p>@enderror
                         <div class="overflow-x-auto">

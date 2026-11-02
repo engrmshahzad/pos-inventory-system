@@ -16,7 +16,7 @@
                 <dl class="mt-6 grid grid-cols-2 gap-3 text-left">
                     <div class="rounded-xl bg-subtle p-3">
                         <dt class="text-xs text-muted">Last login</dt>
-                        <dd class="mt-0.5 text-sm font-semibold text-heading">{{ $user->last_login_at?->format('d M, h:i A') ?? '—' }}</dd>
+                        <dd class="mt-0.5 text-sm font-semibold text-heading">{{ fmtDate($user->last_login_at, true) ?? '—' }}</dd>
                     </div>
                     <div class="rounded-xl bg-subtle p-3">
                         <dt class="text-xs text-muted">Member since</dt>
@@ -60,7 +60,19 @@
                 </form>
             </x-card>
 
-            <x-card title="Change password" subtitle="Use at least 8 characters.">
+            @if ($user->isOwner() || $user->isManager())
+                <x-card title="Approval PIN" :subtitle="$user->pin ? 'A PIN is set. Enter a new one to change it.' : 'Cashiers need this PIN from you to cancel a sale.'">
+                    <form method="POST" action="{{ route('profile.pin') }}" class="grid gap-5 sm:grid-cols-3">
+                        @csrf @method('PUT')
+                        <x-input name="current_password" type="password" label="Current password" icon="lock" error-bag="updatePin" required autocomplete="current-password" />
+                        <x-input name="pin" type="password" inputmode="numeric" maxlength="6" label="New PIN (4–6 digits)" icon="key" error-bag="updatePin" required autocomplete="off" />
+                        <x-input name="pin_confirmation" type="password" inputmode="numeric" maxlength="6" label="Confirm PIN" icon="key" error-bag="updatePin" required autocomplete="off" />
+                        <div class="flex justify-end sm:col-span-3"><x-button type="submit" icon="key" loading>Save PIN</x-button></div>
+                    </form>
+                </x-card>
+            @endif
+
+            <x-card title="Change password" subtitle="At least 8 characters with letters and numbers{{ $user->isCashier() ? '' : ', upper and lower case' }}.">
                 <form method="POST" action="{{ route('password.update') }}" class="space-y-5">
                     @csrf @method('PUT')
                     <x-input name="current_password" type="password" label="Current password" icon="lock" error-bag="updatePassword" required autocomplete="current-password" />

@@ -33,7 +33,7 @@
                                 <td><x-badge color="slate">{{ $r->branch_code }}</x-badge></td>
                                 <td class="tabular">{{ $r->batch_no ?: '—' }}</td>
                                 <td class="whitespace-nowrap">
-                                    {{ \Illuminate\Support\Carbon::parse($r->expiry_date)->format('d M Y') }}
+                                    {{ fmtDate($r->expiry_date) }}
                                     <span @class(['block text-xs font-semibold', 'text-danger' => $r->expired, 'text-amber-600' => ! $r->expired])>{{ $r->expired ? abs($r->days_left).' days ago' : ($r->days_left === 0 ? 'Today' : 'in '.$r->days_left.' days') }}</span>
                                 </td>
                                 <td class="text-right tabular">{{ rtrim(rtrim(number_format((float) $r->batch_qty, 3), '0'), '.') }}</td>
@@ -43,7 +43,7 @@
                                     @can('stock.adjust')
                                         @if ($currentBranch?->id === $r->branch_id)
                                             <x-button size="sm" :variant="$r->expired ? 'danger' : 'outline'" icon="trash"
-                                                :href="route('adjustments.create', ['reason' => 'expired', 'source' => 'expiry', 'products' => [$r->product_id => -$r->suggested], 'note' => 'Batch '.($r->batch_no ?: $r->purchase_no).' exp '.\Illuminate\Support\Carbon::parse($r->expiry_date)->format('d M Y')])">Write off</x-button>
+                                                :href="route('adjustments.create', ['reason' => 'expired', 'source' => 'expiry', 'products' => [$r->product_id => -$r->suggested], 'note' => 'Batch '.($r->batch_no ?: $r->purchase_no).' exp '.fmtDate($r->expiry_date)])">Write off</x-button>
                                         @else
                                             <span class="text-xs text-muted">Switch to {{ $r->branch_code }} to write off</span>
                                         @endif

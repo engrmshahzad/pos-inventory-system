@@ -39,6 +39,10 @@
                     <option value="">Any status</option>
                     @foreach (\App\Models\Sale::PAYMENT_BADGES as $key => [, $label])<option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>@endforeach
                 </select>
+                <select name="state" class="form-control" aria-label="Completed or cancelled">
+                    <option value="">Completed sales</option>
+                    <option value="cancelled" @selected(request('state') === 'cancelled')>Cancelled sales</option>
+                </select>
                 <select name="method" class="form-control" aria-label="Payment method">
                     <option value="">Any method</option>
                     @foreach (\App\Models\Payment::METHODS as $key => $label)<option value="{{ $key }}" @selected(request('method') === $key)>{{ $label }}</option>@endforeach
@@ -69,7 +73,7 @@
             @php [$color, $label] = $sale->payment_badge; @endphp
             <tr>
                 <td><a href="{{ route('sales.show', $sale) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $sale->invoice_no }}</a></td>
-                <td class="whitespace-nowrap"><p class="text-heading">{{ $sale->sold_at->format('d M Y') }}</p><p class="text-xs text-muted">{{ $sale->sold_at->format('h:i A') }}</p></td>
+                <td class="whitespace-nowrap"><p class="text-heading">{{ fmtDate($sale->sold_at) }}</p><p class="text-xs text-muted">{{ $sale->sold_at->format('h:i A') }}</p></td>
                 @if ($actor->isOwner() && ! $currentBranch)<td><x-badge color="slate">{{ $sale->branch->code }}</x-badge></td>@endif
                 <td>
                     @if ($sale->customer)
@@ -83,7 +87,7 @@
                 <td class="text-right font-semibold tabular text-heading">{{ money($sale->grand_total) }}</td>
                 <td class="text-right tabular">{{ money($sale->paid_amount) }}</td>
                 <td @class(['text-right tabular', 'font-semibold text-danger' => (float) $sale->due_amount > 0])>{{ money($sale->due_amount) }}</td>
-                <td><x-badge :color="$color" dot>{{ $label }}</x-badge></td>
+                <td>@if ($sale->status === 'cancelled')<x-badge color="danger" dot>Cancelled</x-badge>@else<x-badge :color="$color" dot>{{ $label }}</x-badge>@endif</td>
                 <td class="text-right">
                     <div class="flex justify-end">
                         <x-dropdown width="w-48">

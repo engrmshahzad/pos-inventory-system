@@ -24,9 +24,11 @@ class Permissions
         'System' => ['settings.manage', 'activity.view', 'ui_kit.view'],
     ];
 
+    // Product delete is owner-only: the catalogue is shared by every branch (managers can deactivate).
+    // Managers may cancel sales of their branch (SaleService); cashiers need a manager PIN.
     public const MANAGER_EXCLUDED = [
         'branches.manage', 'roles.manage', 'adjustments.approve', 'transfers.approve',
-        'settings.manage', 'activity.view', 'ui_kit.view', 'sales.cancel',
+        'settings.manage', 'activity.view', 'ui_kit.view', 'products.delete',
     ];
 
     // Cashier discounts are capped by the `cashier_max_discount` setting (SaleService).

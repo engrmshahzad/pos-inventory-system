@@ -16,7 +16,7 @@
             @csrf
             <input type="hidden" name="purchase_id" value="{{ $purchase->id }}">
             <div class="grid gap-6 xl:grid-cols-3">
-                <x-card class="xl:col-span-2" :title="$purchase->purchase_no" :subtitle="$purchase->purchase_date->format('d M Y').' · '.$purchase->supplier->name.' · '.$purchase->branch->name.' · '.money($purchase->grand_total, true)" padding="p-0">
+                <x-card class="xl:col-span-2" :title="$purchase->purchase_no" :subtitle="fmtDate($purchase->purchase_date).' · '.$purchase->supplier->name.' · '.$purchase->branch->name.' · '.money($purchase->grand_total, true)" padding="p-0">
                     @error('items')<p class="mx-6 mt-4 rounded-lg bg-danger/10 px-3 py-2 text-sm font-medium text-red-600">{{ $message }}</p>@enderror
                     <div class="overflow-x-auto">
                         <table class="data-table">
@@ -65,7 +65,7 @@
             <ul class="divide-y divide-line">
                 @forelse ($recent as $p)
                     <li><a href="{{ route('purchase-returns.create', ['purchase' => $p->purchase_no]) }}" class="flex items-center justify-between px-6 py-3.5 hover:bg-subtle">
-                        <span><span class="font-semibold tabular text-heading">{{ $p->purchase_no }}</span><span class="block text-xs text-muted">{{ $p->supplier->name }} · {{ $p->purchase_date->format('d M Y') }}</span></span>
+                        <span><span class="font-semibold tabular text-heading">{{ $p->purchase_no }}</span><span class="block text-xs text-muted">{{ $p->supplier->name }} · {{ fmtDate($p->purchase_date) }}</span></span>
                         <span class="font-semibold tabular">{{ money($p->grand_total) }}</span></a></li>
                 @empty
                     <li><x-empty-state icon="truck" title="No received purchases yet" /></li>

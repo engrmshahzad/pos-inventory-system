@@ -176,18 +176,36 @@ document.addEventListener('alpine:init', () => Alpine.data('posApp', posApp));
 
 /* ---------- Command palette (Ctrl/Cmd + K) ---------- */
 document.addEventListener('alpine:init', () => {
-    Alpine.data('commandPalette', (items) => ({
+    Alpine.data('commandPalette', (items, searchUrl) => ({
         open: false,
         query: '',
         index: 0,
         items,
+        remote: [],
+        loading: false,
+        timer: null,
         get results() {
             const q = this.query.trim().toLowerCase();
-            return q ? this.items.filter((i) => `${i.label} ${i.group}`.toLowerCase().includes(q)) : this.items;
+            const pages = q ? this.items.filter((i) => `${i.label} ${i.group}`.toLowerCase().includes(q)) : this.items;
+            return [...pages.map((p) => ({ ...p, group: `Page · ${p.group}` })), ...this.remote];
+        },
+        search() {
+            this.index = 0;
+            clearTimeout(this.timer);
+            const q = this.query.trim();
+            if (q.length < 2 || !searchUrl) { this.remote = []; return; }
+            this.loading = true;
+            this.timer = setTimeout(async () => {
+                try {
+                    const data = await fetch(`${searchUrl}?q=${encodeURIComponent(q)}`, { headers: { Accept: 'application/json' } }).then((r) => r.json());
+                    if (this.query.trim() === q) this.remote = data;
+                } catch { this.remote = []; } finally { this.loading = false; }
+            }, 200);
         },
         show() {
             this.open = true;
             this.query = '';
+            this.remote = [];
             this.index = 0;
             this.$nextTick(() => this.$refs.input?.focus());
         },

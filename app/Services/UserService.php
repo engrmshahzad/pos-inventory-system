@@ -30,11 +30,16 @@ class UserService
         return DB::transaction(function () use ($user, $data, $avatar) {
             $attributes = $this->attributes($data);
 
-            if (empty($attributes['password'])) {
+            $passwordChanged = ! empty($attributes['password']);
+            if (! $passwordChanged) {
                 unset($attributes['password']);
             }
 
             $user->update($attributes);
+
+            if ($passwordChanged) {
+                $this->endSessions($user);
+            }
 
             if ($avatar) {
                 $this->replaceAvatar($user, $avatar);
@@ -49,6 +54,14 @@ class UserService
 
             return $user;
         });
+    }
+
+    /** Sign the user out everywhere (database sessions), optionally keeping one session. */
+    public function endSessions(User $user, ?string $exceptSessionId = null): void
+    {
+        DB::table('sessions')->where('user_id', $user->id)
+            ->when($exceptSessionId, fn ($q) => $q->where('id', '!=', $exceptSessionId))
+            ->delete();
     }
 
     public function replaceAvatar(User $user, UploadedFile $file): void

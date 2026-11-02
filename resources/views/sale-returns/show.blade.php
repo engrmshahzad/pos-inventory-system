@@ -1,5 +1,5 @@
 <x-app-layout :title="$return->return_no">
-    <x-page-header :title="$return->return_no" :subtitle="$return->returned_at->format('d M Y, h:i A').' · '.$return->branch->name" :breadcrumbs="['Sales' => null, 'Sale Returns' => route('sale-returns.index'), $return->return_no => null]">
+    <x-page-header :title="$return->return_no" :subtitle="fmtDate($return->returned_at, true).' · '.$return->branch->name" :breadcrumbs="['Sales' => null, 'Sale Returns' => route('sale-returns.index'), $return->return_no => null]">
         <x-button :href="route('sale-returns.receipt', $return)" target="_blank" variant="outline" icon="printer">Print receipt</x-button>
         <x-button :href="route('sale-returns.create')" icon="undo">New Return</x-button>
     </x-page-header>

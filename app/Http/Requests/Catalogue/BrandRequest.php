@@ -16,7 +16,7 @@ class BrandRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('brands')->whereNull('deleted_at')->ignore($this->route('brand'))],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:1024'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'], // no SVG: it can carry scripts
             'remove_logo' => ['nullable', 'boolean'],
         ];
     }

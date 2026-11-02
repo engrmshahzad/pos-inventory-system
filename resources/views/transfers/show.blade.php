@@ -17,7 +17,7 @@
         }
     @endphp
 
-    <x-page-header :title="$transfer->transfer_no" :subtitle="$transfer->fromBranch->name.' → '.$transfer->toBranch->name.' · '.$transfer->transfer_date->format('d M Y')"
+    <x-page-header :title="$transfer->transfer_no" :subtitle="$transfer->fromBranch->name.' → '.$transfer->toBranch->name.' · '.fmtDate($transfer->transfer_date)"
         :breadcrumbs="['Inventory' => null, 'Transfers' => route('transfers.index'), $transfer->transfer_no => null]">
         <x-button :href="route('transfers.challan', $transfer)" target="_blank" variant="outline" icon="file-text">Delivery challan</x-button>
         @if ($canCancel)
@@ -52,7 +52,7 @@
                     <div class="min-w-0 shrink-0">
                         <p @class(['text-sm font-semibold', 'text-heading' => $reached, 'text-muted' => ! $reached])>{{ $stepLabel }}</p>
                         @if ($reached && $when)
-                            <p class="text-xs text-muted">{{ $when->format('d M Y, h:i A') }}</p>
+                            <p class="text-xs text-muted">{{ fmtDate($when, true) }}</p>
                             <p class="text-xs text-body">{{ $who?->name }}</p>
                         @else
                             <p class="text-xs text-muted">Waiting</p>

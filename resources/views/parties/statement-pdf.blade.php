@@ -28,8 +28,8 @@
             </td>
             <td>
                 <div class="title">ACCOUNT STATEMENT</div>
-                <div class="right muted">{{ $from ? $from->format('d M Y') : 'Beginning' }} — {{ $to ? $to->format('d M Y') : now()->format('d M Y') }}</div>
-                <div class="right muted">Printed {{ now()->format('d M Y, h:i A') }}</div>
+                <div class="right muted">{{ $from ? fmtDate($from) : 'Beginning' }} — {{ $to ? fmtDate($to) : fmtDate(now()) }}</div>
+                <div class="right muted">Printed {{ fmtDate(now(), true) }}</div>
             </td>
         </tr>
     </table>
@@ -44,11 +44,11 @@
         <thead><tr><th>Date</th><th>Description</th><th>Reference</th><th class="right">Debit</th><th class="right">Credit</th><th class="right">Balance</th></tr></thead>
         <tbody>
             @if ($from)
-                <tr><td>{{ $from->format('d M Y') }}</td><td colspan="4" class="bold">Balance brought forward</td><td class="right bold">{{ money($ledger['opening'], true) }}</td></tr>
+                <tr><td>{{ fmtDate($from) }}</td><td colspan="4" class="bold">Balance brought forward</td><td class="right bold">{{ money($ledger['opening'], true) }}</td></tr>
             @endif
             @foreach ($ledger['entries'] as $e)
                 <tr>
-                    <td>{{ $e['date']->format('d M Y') }}</td>
+                    <td>{{ fmtDate($e['date']) }}</td>
                     <td>{{ $e['description'] }}</td>
                     <td>{{ $e['reference'] }}</td>
                     <td class="right">{{ $e['debit'] > 0 ? money($e['debit'], true) : '' }}</td>

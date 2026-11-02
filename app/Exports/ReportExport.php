@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Reports\ReportResult;
+use App\Support\SafeCell;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -21,7 +22,7 @@ class ReportExport implements FromArray, ShouldAutoSize, WithStyles, WithTitle
     public function array(): array
     {
         $columns = $this->result->columns;
-        $out = [[$this->title], [$this->subtitle], []];
+        $out = [[SafeCell::text($this->title)], [SafeCell::text($this->subtitle)], []];
         $out[] = array_map(fn ($c) => $c[0], array_values($columns));
 
         foreach ($this->result->rows as $row) {
@@ -40,7 +41,7 @@ class ReportExport implements FromArray, ShouldAutoSize, WithStyles, WithTitle
             $value = $row[$key] ?? null;
             $type = $row['_type'] ?? $col[1];
 
-            return in_array($type, ['money', 'number', 'qty', 'percent'], true) && is_numeric($value) ? (float) $value : (is_scalar($value) ? (string) $value : '');
+            return in_array($type, ['money', 'number', 'qty', 'percent'], true) && is_numeric($value) ? (float) $value : (is_scalar($value) ? SafeCell::text((string) $value) : '');
         })->values()->all();
     }
 

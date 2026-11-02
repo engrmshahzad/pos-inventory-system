@@ -71,8 +71,8 @@
                             <x-button size="sm" variant="outline" icon="upload" @click="$refs.logo.click()">Upload logo</x-button>
                             <x-button size="sm" variant="ghost-danger" x-show="preview" @click="preview = null; removeLogo = true; $refs.logo.value = ''">Remove</x-button>
                         </div>
-                        <p class="mt-1.5 text-xs text-muted">Optional. PNG, JPG, WEBP or SVG, max 1 MB.</p>
-                        <input type="file" name="logo" accept="image/*" class="hidden" x-ref="logo" @change="const f = $event.target.files[0]; if (f) { preview = URL.createObjectURL(f); removeLogo = false }">
+                        <p class="mt-1.5 text-xs text-muted">Optional. PNG, JPG or WEBP, max 1 MB.</p>
+                        <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="hidden" x-ref="logo" @change="const f = $event.target.files[0]; if (f) { preview = URL.createObjectURL(f); removeLogo = false }">
                         @error('logo')<p class="form-error">{{ $message }}</p>@enderror
                     </div>
                 </div>

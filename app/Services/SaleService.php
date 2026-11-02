@@ -82,6 +82,8 @@ class SaleService
                 $customer->increment('balance', $due);
             }
 
+            $this->logSensitive($user, $sale, $totals);
+
             // A resumed held bill is replaced by the completed sale.
             if (! empty($data['hold_id'])) {
                 $this->heldQuery($user, $branch)->whereKey($data['hold_id'])->first()?->delete();
@@ -180,6 +182,73 @@ class SaleService
     }
 
     /**
+     * Cancel a completed sale: stock goes back, money taken at the till is refunded (refund rows, by method),
+     * the unpaid part leaves the customer's khata and later receipts on this invoice stay with the customer as advance.
+     * Owner/manager of the branch may cancel; anyone else needs an owner/manager PIN.
+     */
+    public function cancel(Sale $sale, User $user, string $reason, ?string $pin = null): Sale
+    {
+        $approver = null;
+        $mayCancel = $user->isOwner() || ($user->isManager() && $user->branch_id === $sale->branch_id);
+
+        if (! $mayCancel) {
+            $approver = $pin ? User::approverByPin($pin, $sale->branch_id) : null;
+            if (! $approver) {
+                throw ValidationException::withMessages(['pin' => 'A valid manager or owner PIN is needed to cancel this sale.']);
+            }
+        }
+
+        return DB::transaction(function () use ($sale, $user, $reason, $approver) {
+            $sale = Sale::whereKey($sale->id)->lockForUpdate()->with(['items', 'payments', 'allocations', 'branch'])->first();
+
+            if ($sale->status !== Sale::STATUS_COMPLETED) {
+                throw ValidationException::withMessages(['reason' => 'Only completed sales can be cancelled.']);
+            }
+            if ($sale->returns()->exists()) {
+                throw ValidationException::withMessages(['reason' => 'This sale already has returns. Use a sale return for the remaining items instead.']);
+            }
+
+            foreach ($sale->items as $item) {
+                $this->stock->increase($sale->branch_id, $item->product_id, (float) $item->quantity, 'sale_cancel', $sale, $sale->invoice_no, 'Sale cancelled', (float) $item->purchase_price);
+            }
+
+            // Refund what was paid at the till, per method.
+            $register = CashRegister::openFor($user, $sale->branch_id);
+            foreach ($sale->payments->where('type', 'sale')->groupBy('method') as $method => $rows) {
+                $sale->payments()->create([
+                    'payment_no' => $this->numbers->next('RFD', $sale->branch),
+                    'branch_id' => $sale->branch_id,
+                    'type' => 'refund',
+                    'customer_id' => $sale->customer_id,
+                    'method' => $method,
+                    'amount' => round($rows->sum('amount'), 2),
+                    'note' => "Cancelled {$sale->invoice_no}",
+                    'cash_register_id' => $method === 'cash' ? $register?->id : null,
+                    'user_id' => $user->id,
+                    'paid_at' => now(),
+                ]);
+            }
+
+            if ($sale->customer_id) {
+                $receipts = (float) $sale->payments->where('type', 'customer_receipt')->sum('amount') + (float) $sale->allocations->sum('amount');
+                Customer::whereKey($sale->customer_id)->decrement('balance', round((float) $sale->due_amount + $receipts, 2));
+            }
+
+            $sale->update([
+                'status' => Sale::STATUS_CANCELLED,
+                'cancelled_at' => now(),
+                'cancelled_by' => $user->id,
+                'cancel_approved_by' => $approver?->id,
+                'cancel_reason' => $reason,
+            ]);
+
+            activity('sale_cancelled', "Sale {$sale->invoice_no} (".money($sale->grand_total, true).') cancelled'.($approver ? " with {$approver->name}'s PIN" : '').": {$reason}", $sale);
+
+            return $sale;
+        });
+    }
+
+    /**
      * Server-side cart maths. Line: qty × price − line discount (+ tax on that). Bill discount comes off the subtotal.
      *
      * @return array{lines: list<array>, subtotal: float, discount_type: string, discount_value: float, discount_amount: float,
@@ -265,6 +334,25 @@ class SaleService
             'shipping' => $shipping,
             'grand_total' => round($subtotal - $discountAmount + $tax + $shipping, 2),
         ];
+    }
+
+    /** Audit trail for price overrides and discounts above the cashier cap. */
+    protected function logSensitive(User $user, Sale $sale, array $totals): void
+    {
+        $listPrices = Product::withTrashed()->whereIn('id', array_column($totals['lines'], 'product_id'))->pluck('sale_price', 'id');
+        $overrides = collect($totals['lines'])->filter(fn ($l) => round((float) $listPrices[$l['product_id']], 2) != $l['unit_price']);
+        if ($overrides->isNotEmpty()) {
+            activity('price_override', "{$sale->invoice_no}: price changed on ".$overrides->pluck('product_name')->implode(', '), $sale, [
+                'lines' => $overrides->map(fn ($l) => ['product' => $l['product_name'], 'list' => (float) $listPrices[$l['product_id']], 'charged' => $l['unit_price']])->values()->all(),
+            ]);
+        }
+
+        $gross = collect($totals['lines'])->sum(fn ($l) => $l['quantity'] * $l['unit_price']);
+        $discount = collect($totals['lines'])->sum('discount') + $totals['discount_amount'];
+        $percent = $gross > 0 ? round($discount / $gross * 100, 1) : 0;
+        if ($percent > (float) settings('cashier_max_discount', 5)) {
+            activity('large_discount', "{$sale->invoice_no}: {$percent}% discount (".money($discount, true).')', $sale, ['percent' => $percent, 'amount' => $discount]);
+        }
     }
 
     /** Cashiers may discount at most `cashier_max_discount` % of the bill (line + bill discounts together). */

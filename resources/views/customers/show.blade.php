@@ -39,7 +39,7 @@
             <x-stat-card label="Total purchases" :value="money($stats['total'])" icon="shopping-cart" :hint="$stats['count'].' invoices'" />
             <x-stat-card label="Total paid" :value="money($stats['paid'])" icon="check-circle" color="success" />
             <x-stat-card label="Current due" :value="money(max(0, $balance))" icon="wallet" color="danger" />
-            <x-stat-card label="Last visit" :value="$stats['last_visit']?->format('d M Y') ?? '—'" icon="calendar" color="info" :hint="$stats['last_visit']?->diffForHumans()" />
+            <x-stat-card label="Last visit" :value="fmtDate($stats['last_visit'])" icon="calendar" color="info" :hint="$stats['last_visit']?->diffForHumans()" />
         </div>
 
         <div class="mb-6 flex gap-6 overflow-x-auto border-b border-line" role="tablist">
@@ -60,7 +60,7 @@
                             @if ($canOpenBranch($sale->branch_id))<a href="{{ route('sales.show', $sale) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $sale->invoice_no }}</a>
                             @else<span class="font-semibold tabular text-heading">{{ $sale->invoice_no }}</span>@endif
                         </td>
-                        <td class="whitespace-nowrap">{{ $sale->sold_at->format('d M Y, h:i A') }}</td>
+                        <td class="whitespace-nowrap">{{ fmtDate($sale->sold_at, true) }}</td>
                         <td><x-badge color="slate">{{ $sale->branch->code }}</x-badge></td>
                         <td class="text-right tabular">{{ $sale->items_count }}</td>
                         <td class="text-right font-semibold tabular text-heading">{{ money($sale->grand_total) }}</td>

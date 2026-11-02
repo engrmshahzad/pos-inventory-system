@@ -26,7 +26,7 @@
         <hr>
         <table>
             <tr><td>No</td><td class="right bold">{{ $payment->payment_no }}</td></tr>
-            <tr><td>Date</td><td class="right">{{ $payment->paid_at->format('d/m/Y h:i A') }}</td></tr>
+            <tr><td>Date</td><td class="right">{{ fmtDate($payment->paid_at, true) }}</td></tr>
             <tr><td>{{ $payment->is_incoming ? 'From' : 'To' }}</td><td class="right">{{ $party?->name ?? 'Walk-in' }}</td></tr>
             <tr><td>Method</td><td class="right">{{ $payment->method_label }}</td></tr>
             @if ($payment->reference)<tr><td>Ref</td><td class="right">{{ $payment->reference }}</td></tr>@endif

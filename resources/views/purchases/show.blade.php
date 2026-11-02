@@ -1,6 +1,6 @@
 <x-app-layout :title="$purchase->purchase_no">
     @php [$sc, $sl] = $purchase->status_badge; [$pc, $pl] = $purchase->payment_badge; $received = $purchase->status === 'received'; @endphp
-    <x-page-header :title="$purchase->purchase_no" :subtitle="$purchase->purchase_date->format('d M Y').' · '.$purchase->supplier->name.' · '.$purchase->branch->name"
+    <x-page-header :title="$purchase->purchase_no" :subtitle="fmtDate($purchase->purchase_date).' · '.$purchase->supplier->name.' · '.$purchase->branch->name"
         :breadcrumbs="['Purchases' => route('purchases.index'), $purchase->purchase_no => null]">
         <x-button :href="route('purchases.pdf', $purchase)" target="_blank" variant="outline" icon="file-text">A4 PDF</x-button>
         @if (! $received)
@@ -28,7 +28,7 @@
                 <div><p class="section-label">Supplier</p><a href="{{ route('suppliers.show', $purchase->supplier) }}" class="mt-1 block font-semibold text-heading hover:text-primary">{{ $purchase->supplier->name }}</a><p class="text-sm text-muted">{{ $purchase->supplier->company }}</p></div>
                 <div><p class="section-label">Supplier ref</p><p class="mt-1 font-semibold text-heading">{{ $purchase->reference_no ?: '—' }}</p></div>
                 <div><p class="section-label">Status</p><div class="mt-1 flex gap-1.5"><x-badge :color="$sc" dot>{{ $sl }}</x-badge><x-badge :color="$pc">{{ $pl }}</x-badge></div>
-                    @if ($purchase->received_at)<p class="mt-1 text-xs text-muted">Received {{ $purchase->received_at->format('d M, h:i A') }}</p>@endif</div>
+                    @if ($purchase->received_at)<p class="mt-1 text-xs text-muted">Received {{ fmtDate($purchase->received_at, true) }}</p>@endif</div>
                 <div><p class="section-label">Entered by</p><p class="mt-1 font-semibold text-heading">{{ $purchase->user->name }}</p></div>
             </div>
             <div class="overflow-x-auto">
@@ -43,7 +43,7 @@
                                     <span class="block text-xs text-muted">
                                         {{ $item->product?->sku }}
                                         @if ($item->new_sale_price !== null) · new price {{ money($item->new_sale_price) }} @endif
-                                        @if ($item->expiry_date) · exp {{ $item->expiry_date->format('d M Y') }} @endif
+                                        @if ($item->expiry_date) · exp {{ fmtDate($item->expiry_date) }} @endif
                                         @if ($item->batch_no) · batch {{ $item->batch_no }} @endif
                                     </span>
                                 </td>
@@ -76,10 +76,10 @@
             <x-card title="Payments" padding="p-0">
                 <ul class="divide-y divide-line">
                     @foreach ($purchase->payments as $p)
-                        <li class="flex items-center justify-between gap-3 px-6 py-3.5"><div><a href="{{ route('payments.show', $p) }}" class="font-medium text-heading hover:text-primary">{{ $p->payment_no }}</a><p class="text-xs text-muted">{{ $p->paid_at->format('d M Y') }} · {{ $p->method_label }} · at purchase</p></div><span class="font-semibold tabular">{{ money($p->amount, true) }}</span></li>
+                        <li class="flex items-center justify-between gap-3 px-6 py-3.5"><div><a href="{{ route('payments.show', $p) }}" class="font-medium text-heading hover:text-primary">{{ $p->payment_no }}</a><p class="text-xs text-muted">{{ fmtDate($p->paid_at) }} · {{ $p->method_label }} · at purchase</p></div><span class="font-semibold tabular">{{ money($p->amount, true) }}</span></li>
                     @endforeach
                     @foreach ($purchase->allocations as $a)
-                        <li class="flex items-center justify-between gap-3 px-6 py-3.5"><div><a href="{{ route('payments.show', $a->payment_id) }}" class="font-medium text-heading hover:text-primary">{{ $a->payment->payment_no }}</a><p class="text-xs text-muted">{{ $a->payment->paid_at->format('d M Y') }} · {{ $a->payment->method_label }}</p></div><span class="font-semibold tabular">{{ money($a->amount, true) }}</span></li>
+                        <li class="flex items-center justify-between gap-3 px-6 py-3.5"><div><a href="{{ route('payments.show', $a->payment_id) }}" class="font-medium text-heading hover:text-primary">{{ $a->payment->payment_no }}</a><p class="text-xs text-muted">{{ fmtDate($a->payment->paid_at) }} · {{ $a->payment->method_label }}</p></div><span class="font-semibold tabular">{{ money($a->amount, true) }}</span></li>
                     @endforeach
                     @if ($purchase->payments->isEmpty() && $purchase->allocations->isEmpty())
                         <li><x-empty-state icon="wallet" title="Nothing paid yet" /></li>
@@ -90,7 +90,7 @@
                 <x-card title="Returns" padding="p-0">
                     <ul class="divide-y divide-line">
                         @foreach ($purchase->returns as $r)
-                            <li class="flex items-center justify-between px-6 py-3.5"><div><a href="{{ route('purchase-returns.show', $r) }}" class="font-medium text-heading hover:text-primary">{{ $r->return_no }}</a><p class="text-xs text-muted">{{ $r->returned_at->format('d M Y') }} · {{ $r->settle_label }}</p></div><span class="font-semibold tabular text-warning">{{ money($r->total, true) }}</span></li>
+                            <li class="flex items-center justify-between px-6 py-3.5"><div><a href="{{ route('purchase-returns.show', $r) }}" class="font-medium text-heading hover:text-primary">{{ $r->return_no }}</a><p class="text-xs text-muted">{{ fmtDate($r->returned_at) }} · {{ $r->settle_label }}</p></div><span class="font-semibold tabular text-warning">{{ money($r->total, true) }}</span></li>
                         @endforeach
                     </ul>
                 </x-card>

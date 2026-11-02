@@ -8,13 +8,27 @@
         :breadcrumbs="['Sales' => null, 'Sales List' => route('sales.index'), $sale->invoice_no => null]">
         <x-button :href="route('sales.receipt', $sale)" target="_blank" variant="outline" icon="receipt">Receipt</x-button>
         <x-button :href="route('sales.pdf', $sale)" target="_blank" variant="outline" icon="file-text">A4 PDF</x-button>
-        @can('sales.return')
-            <x-button :href="route('sale-returns.create', ['invoice' => $sale->invoice_no])" variant="outline" icon="undo">Return</x-button>
-        @endcan
+        @if ($sale->status === 'completed')
+            @can('sales.return')
+                <x-button :href="route('sale-returns.create', ['invoice' => $sale->invoice_no])" variant="outline" icon="undo">Return</x-button>
+            @endcan
+            @if ($sale->returns->isEmpty())
+                <x-button variant="ghost-danger" icon="x-circle" @click="$dispatch('open-modal', 'cancel-sale')">Cancel sale</x-button>
+            @endif
+        @endif
         @can('receivePayment', $sale)
-            <x-button icon="banknote" variant="success" @click="$dispatch('open-modal', 'receive-payment')">Receive Payment</x-button>
+            @if ($sale->status === 'completed')
+                <x-button icon="banknote" variant="success" @click="$dispatch('open-modal', 'receive-payment')">Receive Payment</x-button>
+            @endif
         @endcan
     </x-page-header>
+
+    @if ($sale->status === 'cancelled')
+        <div class="mb-6 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+            <x-icon name="x-circle" size="w-5 h-5 shrink-0" />
+            <span><b>Cancelled</b> {{ fmtDate($sale->cancelled_at, true) }} by {{ $sale->canceller?->name }}{{ $sale->cancelApprover ? ' (approved with '.$sale->cancelApprover->name.'\'s PIN)' : '' }}. Reason: {{ $sale->cancel_reason }}. Stock was returned and payments refunded.</span>
+        </div>
+    @endif
 
     <div class="grid gap-6 xl:grid-cols-3">
         {{-- Invoice --}}
@@ -43,7 +57,7 @@
                 </div>
                 <div>
                     <p class="section-label">Date</p>
-                    <p class="mt-1 font-semibold text-heading">{{ $sale->sold_at->format('d M Y') }}</p>
+                    <p class="mt-1 font-semibold text-heading">{{ fmtDate($sale->sold_at) }}</p>
                     <p class="text-sm text-muted">{{ $sale->sold_at->format('h:i A') }}</p>
                 </div>
             </div>
@@ -102,7 +116,7 @@
                             <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><x-icon name="coins" size="w-4 h-4" /></span>
                             <div class="min-w-0 flex-1">
                                 <a href="{{ route('payments.show', $allocation->payment_id) }}" class="font-medium text-heading hover:text-primary">{{ $allocation->payment->payment_no }}</a>
-                                <p class="text-xs text-muted">{{ $allocation->payment->paid_at->format('d M Y') }} · {{ $allocation->payment->method_label }} · from khata payment</p>
+                                <p class="text-xs text-muted">{{ fmtDate($allocation->payment->paid_at) }} · {{ $allocation->payment->method_label }} · from khata payment</p>
                             </div>
                             <p class="font-semibold tabular text-heading">{{ money($allocation->amount, true) }}</p>
                         </li>
@@ -112,7 +126,7 @@
                             <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10 text-emerald-600"><x-icon name="banknote" size="w-4 h-4" /></span>
                             <div class="min-w-0 flex-1">
                                 <p class="font-medium text-heading">{{ $payment->method_label }} <span class="text-xs font-normal text-muted">· {{ $payment->type === 'sale' ? 'at sale' : 'received later' }}</span></p>
-                                <p class="text-xs text-muted">{{ $payment->paid_at->format('d M Y, h:i A') }} · {{ $payment->user?->name }}{{ $payment->reference ? ' · Ref '.$payment->reference : '' }}</p>
+                                <p class="text-xs text-muted">{{ fmtDate($payment->paid_at, true) }} · {{ $payment->user?->name }}{{ $payment->reference ? ' · Ref '.$payment->reference : '' }}</p>
                             </div>
                             <p class="font-semibold tabular text-heading">{{ money($payment->amount, true) }}</p>
                         </li>
@@ -129,7 +143,7 @@
                     <ul class="divide-y divide-line">
                         @foreach ($sale->returns as $r)
                             <li class="flex items-center justify-between px-6 py-3.5">
-                                <div><a href="{{ route('sale-returns.show', $r) }}" class="font-medium text-heading hover:text-primary">{{ $r->return_no }}</a><p class="text-xs text-muted">{{ $r->returned_at->format('d M Y') }} · {{ $r->refund_label }}</p></div>
+                                <div><a href="{{ route('sale-returns.show', $r) }}" class="font-medium text-heading hover:text-primary">{{ $r->return_no }}</a><p class="text-xs text-muted">{{ fmtDate($r->returned_at) }} · {{ $r->refund_label }}</p></div>
                                 <span class="font-semibold tabular text-warning">-{{ money($r->total, true) }}</span>
                             </li>
                         @endforeach
@@ -138,6 +152,23 @@
             @endif
         </div>
     </div>
+
+    @if ($sale->status === 'completed' && $sale->returns->isEmpty())
+        @php $needsPin = ! (auth()->user()->isOwner() || (auth()->user()->isManager() && auth()->user()->branch_id === $sale->branch_id)); @endphp
+        <x-modal name="cancel-sale" title="Cancel {{ $sale->invoice_no }}" subtitle="Stock goes back, money taken at the till is refunded, and any unpaid amount leaves the customer's khata." maxWidth="md" :show="$errors->has('cancel_reason') || $errors->has('pin')">
+            <form id="cancel-sale" method="POST" action="{{ route('sales.cancel', $sale) }}" class="space-y-4">
+                @csrf
+                <x-input name="cancel_reason" label="Reason" placeholder="e.g. Wrong items billed" required />
+                @if ($needsPin)
+                    <x-input name="pin" type="password" inputmode="numeric" maxlength="6" label="Manager / owner PIN" icon="key" required autocomplete="off" help="Ask your manager to enter their approval PIN." />
+                @endif
+            </form>
+            <x-slot name="footer">
+                <x-button variant="outline" @click="$dispatch('close-modal', 'cancel-sale')">Keep sale</x-button>
+                <x-button type="submit" form="cancel-sale" variant="danger" icon="x-circle" loading>Cancel sale</x-button>
+            </x-slot>
+        </x-modal>
+    @endif
 
     @can('receivePayment', $sale)
         <x-modal name="receive-payment" title="Receive payment" :subtitle="'Balance due: '.money($sale->due_amount, true)" maxWidth="md" :show="$errors->any()">

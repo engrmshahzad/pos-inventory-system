@@ -1,6 +1,6 @@
 <x-app-layout :title="$adjustment->adjustment_no">
     @php [$label, $color] = $adjustment->status_badge; $canReview = $adjustment->status === 'pending' && auth()->user()->isOwner() && auth()->user()->can('adjustments.approve'); @endphp
-    <x-page-header :title="$adjustment->adjustment_no" :subtitle="$adjustment->reason_label.' · '.$adjustment->branch->name.' · '.$adjustment->adjustment_date->format('d M Y')"
+    <x-page-header :title="$adjustment->adjustment_no" :subtitle="$adjustment->reason_label.' · '.$adjustment->branch->name.' · '.fmtDate($adjustment->adjustment_date)"
         :breadcrumbs="['Inventory' => null, 'Adjustments' => route('adjustments.index'), $adjustment->adjustment_no => null]">
         @if ($canReview)
             <x-button variant="ghost-danger" icon="x" @click="$dispatch('open-modal', 'reject')">Reject</x-button>
@@ -45,7 +45,7 @@
                 <div class="flex justify-between"><dt class="text-muted">Created by</dt><dd class="font-medium text-heading">{{ $adjustment->creator->name }}</dd></div>
                 @if ($adjustment->approver)
                     <div class="flex justify-between"><dt class="text-muted">{{ $adjustment->status === 'rejected' ? 'Rejected' : 'Approved' }} by</dt><dd class="font-medium text-heading">{{ $adjustment->approver->name }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-muted">On</dt><dd class="text-heading">{{ $adjustment->approved_at?->format('d M Y, h:i A') }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-muted">On</dt><dd class="text-heading">{{ fmtDate($adjustment->approved_at, true) }}</dd></div>
                 @endif
                 @if ($adjustment->rejection_reason)<div><dt class="text-muted">Rejection reason</dt><dd class="text-danger">{{ $adjustment->rejection_reason }}</dd></div>@endif
                 @if ($adjustment->note)<div><dt class="text-muted">Note</dt><dd class="text-heading">{{ $adjustment->note }}</dd></div>@endif

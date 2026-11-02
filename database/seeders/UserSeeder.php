@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $owner->syncRoles('owner');
+        $owner->forceFill(['pin' => '2468'])->save(); // demo approval PIN
 
         $staff = [
             'HYD' => [['Bilal Memon', '0301-2223344'], ['Sana Qureshi', '0302-3334455']],
@@ -39,6 +40,9 @@ class UserSeeder extends Seeder
                     'email_verified_at' => now(),
                 ]);
                 $user->syncRoles($role);
+                if ($role === 'manager') {
+                    $user->forceFill(['pin' => '2468'])->save(); // demo approval PIN
+                }
             }
         }
     }

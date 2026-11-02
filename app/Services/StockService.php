@@ -18,7 +18,7 @@ use InvalidArgumentException;
  */
 class StockService
 {
-    public const TYPES_IN = ['opening', 'purchase', 'sale_return', 'transfer_in', 'adjustment'];
+    public const TYPES_IN = ['opening', 'purchase', 'sale_return', 'sale_cancel', 'transfer_in', 'adjustment'];
     public const TYPES_OUT = ['sale', 'purchase_return', 'transfer_out', 'adjustment'];
 
     public function increase(

@@ -16,7 +16,7 @@
             @php [$label, $color] = $c->status_badge; @endphp
             <tr>
                 <td><a href="{{ route('stock-counts.show', $c) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $c->count_no }}</a></td>
-                <td class="whitespace-nowrap">{{ $c->created_at->format('d M Y, h:i A') }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($c->created_at, true) }}</td>
                 <td><x-badge color="slate">{{ $c->branch->code }}</x-badge></td>
                 <td>{{ $c->category?->name ?? 'All products' }}</td>
                 <td class="text-right tabular">{{ $c->counted_count }} / {{ $c->items_count }}</td>

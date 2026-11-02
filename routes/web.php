@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/pin', [ProfileController::class, 'updatePin'])->name('profile.pin');
 
     // Inventory: catalogue
     Route::middleware('permission:categories.manage')->group(function () {
@@ -112,7 +113,9 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('expiry', [ExpiryController::class, 'index'])->middleware('permission:stock.view')->name('expiry.index');
 
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/{id}', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::get('search', \App\Http\Controllers\GlobalSearchController::class)->middleware('throttle:60,1')->name('search');
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 
     // Sales: POS (full-screen) and its JSON endpoints
@@ -142,6 +145,7 @@ Route::middleware('auth')->group(function () {
         Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
         Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->name('sales.pdf');
         Route::post('sales/{sale}/payments', [SaleController::class, 'receivePayment'])->name('sales.payments.store');
+        Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])->middleware('throttle:10,1')->name('sales.cancel');
     });
 
     // Sale returns
@@ -221,6 +225,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:reports.view')->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/{key}', [ReportController::class, 'show'])->name('reports.show');
+        Route::get('exports/{file}', [ReportController::class, 'download'])->name('exports.download');
         Route::get('reports/{key}/export/{format}', [ReportController::class, 'export'])->whereIn('format', ['xlsx', 'pdf', 'print'])->name('reports.export');
     });
     Route::get('activity-log', [ActivityLogController::class, 'index'])->middleware(['role:owner', 'permission:activity.view'])->name('activity.index');

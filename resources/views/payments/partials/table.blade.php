@@ -16,7 +16,7 @@
             };
         @endphp
         <tr>
-            <td class="whitespace-nowrap">{{ $payment->paid_at->format('d M Y') }}<span class="block text-xs text-muted">{{ $payment->paid_at->format('h:i A') }}</span></td>
+            <td class="whitespace-nowrap">{{ fmtDate($payment->paid_at) }}<span class="block text-xs text-muted">{{ $payment->paid_at->format('h:i A') }}</span></td>
             <td class="tabular">
                 @if ($payment->payment_no)
                     <a href="{{ route('payments.show', $payment) }}" class="font-semibold text-heading hover:text-primary">{{ $payment->payment_no }}</a>

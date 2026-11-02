@@ -20,6 +20,7 @@ class SettingsDefinition
             'number_format' => 'international', // international | indian
             'date_format' => 'd M Y',
             'timezone' => 'Asia/Karachi',
+            'session_timeout' => '120', // minutes of inactivity before logout
         ],
         'pos' => [
             'receipt_size' => '80',

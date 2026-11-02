@@ -40,6 +40,7 @@
             @if ($sale->branch->phone)<div class="muted">Ph: {{ $sale->branch->phone }}</div>@endif
             @if (settings('receipt_header'))<div class="muted" style="margin-top:3px">{{ settings('receipt_header') }}</div>@endif
         </div>
+        @if ($sale->status === 'cancelled')<div class="center bold" style="font-size:16px; margin:4px 0">*** CANCELLED ***</div>@endif
         <hr>
         <table>
             <tr><td>Invoice</td><td class="right bold">{{ $sale->invoice_no }}</td></tr>

@@ -87,7 +87,7 @@
             <td style="width:55%; vertical-align:top">
                 <div class="muted" style="font-size:9px; text-transform:uppercase; margin-bottom:4px">Payments</div>
                 @forelse ($sale->payments as $p)
-                    <div>{{ $p->paid_at->format('d M Y') }} · {{ $p->method_label }} · <strong>{{ money($p->amount, true) }}</strong></div>
+                    <div>{{ fmtDate($p->paid_at) }} · {{ $p->method_label }} · <strong>{{ money($p->amount, true) }}</strong></div>
                 @empty
                     <div class="muted">No payment received</div>
                 @endforelse

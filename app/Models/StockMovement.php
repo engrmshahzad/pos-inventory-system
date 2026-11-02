@@ -15,6 +15,7 @@ class StockMovement extends Model
         'purchase' => ['Purchase', 'success'],
         'sale' => ['Sale', 'primary'],
         'sale_return' => ['Sale return', 'info'],
+        'sale_cancel' => ['Sale cancelled', 'danger'],
         'purchase_return' => ['Purchase return', 'warning'],
         'transfer_in' => ['Transfer in', 'success'],
         'transfer_out' => ['Transfer out', 'warning'],

@@ -32,11 +32,12 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
+        'pin',
         'remember_token',
     ];
 
     /** Never written to the activity log. */
-    protected array $activityHidden = ['password', 'remember_token', 'last_login_at', 'last_login_ip'];
+    protected array $activityHidden = ['password', 'pin', 'remember_token', 'last_login_at', 'last_login_ip'];
 
     protected function casts(): array
     {
@@ -44,6 +45,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'pin' => 'hashed',
             'is_active' => 'boolean',
         ];
     }
@@ -87,6 +89,15 @@ class User extends Authenticatable
     {
         return Str::of($this->name)->explode(' ')->filter()->take(2)
             ->map(fn ($part) => Str::upper(Str::substr($part, 0, 1)))->implode('');
+    }
+
+    /** Owner/manager whose approval PIN matches, for this branch (owners approve anywhere). */
+    public static function approverByPin(string $pin, int $branchId): ?self
+    {
+        return static::active()->whereNotNull('pin')
+            ->where(fn ($q) => $q->where('branch_id', $branchId)->orWhereNull('branch_id'))
+            ->get()
+            ->first(fn (self $u) => ($u->isOwner() || $u->isManager()) && \Illuminate\Support\Facades\Hash::check($pin, $u->pin));
     }
 
     /** Reason this account may not sign in, or null when it may. */

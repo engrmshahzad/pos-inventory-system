@@ -28,7 +28,7 @@
                         <x-input name="business_phone" label="Phone" icon="phone" :value="$s['business_phone']" />
                         <x-input name="business_email" type="email" label="Email" icon="mail" :value="$s['business_email']" />
                         <x-input name="business_address" label="Address" icon="map-pin" :value="$s['business_address']" class="sm:col-span-2" />
-                        @foreach (['business_logo' => ['Logo', 'PNG/JPG/SVG, max 1 MB. Used on receipts, invoices and the sidebar.'], 'business_favicon' => ['Favicon', 'Small square PNG/ICO/SVG, max 256 KB.']] as $field => [$label, $help])
+                        @foreach (['business_logo' => ['Logo', 'PNG/JPG/WEBP, max 1 MB. Used on receipts, invoices and the sidebar.'], 'business_favicon' => ['Favicon', 'Small square PNG or ICO, max 256 KB.']] as $field => [$label, $help])
                             <div x-data="{ remove: false }">
                                 <span class="form-label">{{ $label }}</span>
                                 <div class="flex items-center gap-3">
@@ -48,6 +48,7 @@
                         <x-select name="number_format" label="Number format" :options="['international' => '1,250,000 (international)', 'indian' => '12,50,000 (lakh / crore)']" :value="$s['number_format']" />
                         <x-select name="date_format" label="Date format" :options="$dateFormats" :value="$s['date_format']" />
                         <x-select name="timezone" label="Timezone" :options="array_combine($timezones, $timezones)" :value="$s['timezone']" />
+                        <x-input name="session_timeout" type="number" min="5" max="1440" label="Auto logout after (minutes idle)" :value="$s['session_timeout']" help="Users are signed out after this much inactivity." />
                     </div>
                     <x-slot name="footer"><div class="flex justify-end"><x-button type="submit" icon="check" loading>Save general settings</x-button></div></x-slot>
                 </x-card>

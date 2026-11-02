@@ -29,7 +29,7 @@
             <td style="vertical-align:top">
                 <div class="title">{{ $purchase->status === 'ordered' ? 'PURCHASE ORDER' : 'PURCHASE' }}</div>
                 <div class="right"><strong>{{ $purchase->purchase_no }}</strong></div>
-                <div class="right muted">{{ $purchase->purchase_date->format('d M Y') }}</div>
+                <div class="right muted">{{ fmtDate($purchase->purchase_date) }}</div>
                 @if ($purchase->reference_no)<div class="right muted">Supplier ref: {{ $purchase->reference_no }}</div>@endif
             </td>
         </tr>
@@ -45,7 +45,7 @@
             @foreach ($purchase->items as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->product_name }}@if ($item->expiry_date)<br><span class="muted">Exp {{ $item->expiry_date->format('d M Y') }} {{ $item->batch_no ? '· '.$item->batch_no : '' }}</span>@endif</td>
+                    <td>{{ $item->product_name }}@if ($item->expiry_date)<br><span class="muted">Exp {{ fmtDate($item->expiry_date) }} {{ $item->batch_no ? '· '.$item->batch_no : '' }}</span>@endif</td>
                     <td class="right">{{ $qty($item->quantity) }}</td>
                     <td class="right">{{ money($item->unit_cost, true) }}</td>
                     <td class="right">{{ (float) $item->discount > 0 ? money($item->discount, true) : '—' }}</td>

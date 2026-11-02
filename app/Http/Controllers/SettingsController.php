@@ -80,8 +80,9 @@ class SettingsController extends Controller
                 'number_format' => ['required', Rule::in(['international', 'indian'])],
                 'date_format' => ['required', Rule::in(['d M Y', 'd/m/Y', 'd-m-Y', 'Y-m-d', 'M d, Y'])],
                 'timezone' => ['required', 'timezone'],
-                'business_logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:1024'],
-                'business_favicon' => ['nullable', 'image', 'mimes:png,ico,svg', 'max:256'],
+                'session_timeout' => ['required', 'integer', 'min:5', 'max:1440'],
+                'business_logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'], // no SVG: it can carry scripts
+                'business_favicon' => ['nullable', 'file', 'mimes:png,ico', 'max:256'],
                 'remove_business_logo' => ['nullable', 'boolean'],
                 'remove_business_favicon' => ['nullable', 'boolean'],
             ],

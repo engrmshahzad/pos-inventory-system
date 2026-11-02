@@ -18,7 +18,7 @@
         @foreach ($returns as $r)
             <tr>
                 <td><a href="{{ route('purchase-returns.show', $r) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $r->return_no }}</a></td>
-                <td class="whitespace-nowrap">{{ $r->returned_at->format('d M Y') }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($r->returned_at) }}</td>
                 <td><a href="{{ route('purchases.show', $r->purchase_id) }}" class="tabular text-primary">{{ $r->purchase->purchase_no }}</a></td>
                 <td>{{ $r->supplier->name }}</td>
                 <td><x-badge color="slate">{{ $r->branch->code }}</x-badge></td>

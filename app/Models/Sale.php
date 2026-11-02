@@ -15,6 +15,7 @@ class Sale extends Model
 
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_HOLD = 'hold';
+    public const STATUS_CANCELLED = 'cancelled';
 
     public const PAYMENT_BADGES = [
         'paid' => ['success', 'Paid'],
@@ -26,6 +27,7 @@ class Sale extends Model
         'branch_id', 'invoice_no', 'status', 'customer_id', 'user_id', 'cash_register_id',
         'subtotal', 'discount_type', 'discount_value', 'discount_amount', 'tax_amount', 'shipping',
         'grand_total', 'paid_amount', 'due_amount', 'change_amount', 'payment_status', 'note', 'sold_at',
+        'cancelled_at', 'cancelled_by', 'cancel_approved_by', 'cancel_reason',
     ];
 
     protected function casts(): array
@@ -41,6 +43,7 @@ class Sale extends Model
             'due_amount' => 'decimal:2',
             'change_amount' => 'decimal:2',
             'sold_at' => 'datetime',
+            'cancelled_at' => 'datetime',
         ];
     }
 
@@ -62,6 +65,16 @@ class Sale extends Model
     public function cashRegister(): BelongsTo
     {
         return $this->belongsTo(CashRegister::class);
+    }
+
+    public function canceller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by')->withTrashed();
+    }
+
+    public function cancelApprover(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancel_approved_by')->withTrashed();
     }
 
     public function items(): HasMany

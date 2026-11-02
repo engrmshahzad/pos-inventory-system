@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Product;
+use App\Support\SafeCell;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -34,7 +35,7 @@ class ProductsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
     /** @param Product $product */
     public function map($product): array
     {
-        return [
+        return array_map([SafeCell::class, 'text'], [
             $product->name,
             $product->sku,
             $product->barcode,
@@ -49,7 +50,7 @@ class ProductsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
             (float) $product->stock_qty,
             round((float) $product->stock_qty * (float) $product->purchase_price, 2),
             $product->is_active ? 'Yes' : 'No',
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array

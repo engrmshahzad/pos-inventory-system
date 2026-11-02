@@ -26,7 +26,7 @@
             <tr>
                 <td><a href="{{ route('adjustments.show', $a) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $a->adjustment_no }}</a>
                     @if ($a->source !== 'manual')<span class="block text-xs text-muted">{{ $a->source === 'stock_count' ? 'From stock count' : 'From expiry list' }}</span>@endif</td>
-                <td class="whitespace-nowrap">{{ $a->adjustment_date->format('d M Y') }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($a->adjustment_date) }}</td>
                 <td><x-badge color="slate">{{ $a->branch->code }}</x-badge></td>
                 <td>{{ $a->reason_label }}</td>
                 <td class="text-right tabular">{{ $a->items_count }}</td>

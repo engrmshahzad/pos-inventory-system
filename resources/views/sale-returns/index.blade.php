@@ -19,7 +19,7 @@
         @foreach ($returns as $r)
             <tr>
                 <td><a href="{{ route('sale-returns.show', $r) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $r->return_no }}</a></td>
-                <td class="whitespace-nowrap">{{ $r->returned_at->format('d M Y, h:i A') }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($r->returned_at, true) }}</td>
                 <td><a href="{{ route('sales.show', $r->sale_id) }}" class="tabular text-primary hover:text-primary-hover">{{ $r->sale->invoice_no }}</a></td>
                 <td>{{ $r->customer?->name ?? 'Walk-in' }}</td>
                 <td><x-badge color="slate">{{ $r->branch->code }}</x-badge></td>

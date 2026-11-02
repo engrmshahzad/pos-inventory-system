@@ -14,7 +14,7 @@
                     <x-stat-card label="Expected in drawer" :value="money($summary['expected_cash'])" icon="check-circle" color="info" />
                     <x-stat-card label="Sales this shift" :value="money($summary['sales_total'])" icon="receipt" color="warning" :hint="$summary['sales_count'].' invoices'" />
                 </div>
-                <x-card title="By payment method" :subtitle="'Shift opened '.$register->opened_at->format('d M, h:i A').' ('.$register->opened_at->diffForHumans().')'">
+                <x-card title="By payment method" :subtitle="'Shift opened '.fmtDate($register->opened_at, true).' ('.$register->opened_at->diffForHumans().')'">
                     <dl class="divide-y divide-line text-sm">
                         @foreach ($summary['methods'] as $method)
                             <div class="flex justify-between py-2.5"><dt class="text-muted">{{ $method['label'] }}</dt><dd class="font-semibold tabular text-heading">{{ money($method['total'], true) }}</dd></div>
@@ -62,8 +62,8 @@
         </x-slot>
         @foreach ($history as $shift)
             <tr>
-                <td class="whitespace-nowrap">{{ $shift->opened_at->format('d M, h:i A') }}</td>
-                <td class="whitespace-nowrap">{{ $shift->closed_at?->format('d M, h:i A') ?? '—' }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($shift->opened_at, true) }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($shift->closed_at, true) ?? '—' }}</td>
                 <td>{{ $shift->user->name }}</td>
                 <td><x-badge color="slate">{{ $shift->branch->code }}</x-badge></td>
                 <td class="text-right tabular">{{ money($shift->opening_cash) }}</td>

@@ -7,6 +7,17 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    public function index(Request $request): \Illuminate\View\View
+    {
+        $user = $request->user();
+
+        return view('notifications.index', [
+            'notifications' => ($request->input('filter') === 'unread' ? $user->unreadNotifications() : $user->notifications())
+                ->latest()->paginate(20)->withQueryString(),
+            'unread' => $user->unreadNotifications()->count(),
+        ]);
+    }
+
     /** Mark one notification read and go to its link. */
     public function open(Request $request, string $id): RedirectResponse
     {

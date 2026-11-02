@@ -1,6 +1,6 @@
 <x-app-layout :title="$count->count_no">
     @php [$label, $color] = $count->status_badge; $open = $count->status === 'in_progress'; @endphp
-    <x-page-header :title="$count->count_no" :subtitle="$count->branch->name.' · '.($count->category?->name ?? 'All products').' · started '.$count->created_at->format('d M Y, h:i A')"
+    <x-page-header :title="$count->count_no" :subtitle="$count->branch->name.' · '.($count->category?->name ?? 'All products').' · started '.fmtDate($count->created_at, true)"
         :breadcrumbs="['Inventory' => null, 'Stock Count' => route('stock-counts.index'), $count->count_no => null]">
         <x-button :href="route('stock-counts.sheet', $count)" target="_blank" variant="outline" icon="printer">Print count sheet</x-button>
         @if ($open)
@@ -19,7 +19,7 @@
 
     @if ($count->adjustment)
         <div class="mb-6 flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
-            <x-icon name="check-circle" size="w-5 h-5" /> Applied {{ $count->applied_at?->format('d M Y, h:i A') }} as
+            <x-icon name="check-circle" size="w-5 h-5" /> Applied {{ fmtDate($count->applied_at, true) }} as
             <a href="{{ route('adjustments.show', $count->adjustment) }}" class="font-semibold underline">{{ $count->adjustment->adjustment_no }}</a>
             ({{ \App\Models\StockAdjustment::STATUSES[$count->adjustment->status][0] }}).
         </div>

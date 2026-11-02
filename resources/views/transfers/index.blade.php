@@ -27,7 +27,7 @@
                 <input type="hidden" name="tab" value="{{ $tab }}">
                 <div class="relative flex-1 sm:max-w-xs">
                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted"><x-icon name="search" size="w-4 h-4" /></span>
-                    <input type="search" name="search" value="{{ request('search') }}" placeholder="TR-000001" class="form-control pl-10" aria-label="Search">
+                    <input type="search" name="search" value="{{ request('search') }}" placeholder="Search transfer no…" class="form-control pl-10" aria-label="Search">
                 </div>
                 <select name="status" class="form-control w-auto min-w-[170px]" onchange="this.form.submit()" aria-label="Status">
                     <option value="">Any status</option>
@@ -43,7 +43,7 @@
                     <a href="{{ route('transfers.show', $t) }}" class="font-semibold tabular text-heading hover:text-primary">{{ $t->transfer_no }}</a>
                     @if ($t->is_request && $t->status === 'draft')<span class="ml-1 rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400">Request</span>@endif
                 </td>
-                <td class="whitespace-nowrap">{{ $t->transfer_date->format('d M Y') }}</td>
+                <td class="whitespace-nowrap">{{ fmtDate($t->transfer_date) }}</td>
                 <td>
                     <span class="inline-flex items-center gap-2 font-medium text-heading">
                         <x-badge color="slate">{{ $t->fromBranch->code }}</x-badge><x-icon name="arrow-right" size="w-3.5 h-3.5 text-muted" /><x-badge color="slate">{{ $t->toBranch->code }}</x-badge>

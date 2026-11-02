@@ -17,7 +17,7 @@
 <body>
     <div class="no-print"><button onclick="window.print()">Print</button></div>
     <h1>{{ settings('business_name', config('app.name')) }} — Stock count sheet</h1>
-    <p class="muted">{{ $count->count_no }} · {{ $count->branch->name }} · {{ $count->category?->name ?? 'All products' }} · {{ $count->created_at->format('d M Y') }} · Counted by: ______________</p>
+    <p class="muted">{{ $count->count_no }} · {{ $count->branch->name }} · {{ $count->category?->name ?? 'All products' }} · {{ fmtDate($count->created_at) }} · Counted by: ______________</p>
     <table>
         <thead><tr><th>#</th><th>Product</th><th>SKU / Barcode</th><th>Unit</th><th class="right">Counted qty</th><th>Remarks</th></tr></thead>
         <tbody>

@@ -11,7 +11,7 @@
         @php $p = $movement->product; @endphp
         <tr>
             <td class="whitespace-nowrap">
-                <p class="text-heading">{{ $movement->created_at->format('d M Y') }}</p>
+                <p class="text-heading">{{ fmtDate($movement->created_at) }}</p>
                 <p class="text-xs text-muted tabular">{{ $movement->created_at->format('h:i A') }}</p>
             </td>
             @if ($showProduct)

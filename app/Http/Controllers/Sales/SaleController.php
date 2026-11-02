@@ -29,7 +29,8 @@ class SaleController extends Controller
         $from = $request->filled('from') ? $request->date('from') : ($user->isCashier() ? today() : today()->startOfMonth());
         $to = $request->filled('to') ? $request->date('to') : today();
 
-        $query = Sale::completed()
+        $cancelledView = $request->input('state') === 'cancelled';
+        $query = Sale::query()->where('sales.status', $cancelledView ? Sale::STATUS_CANCELLED : Sale::STATUS_COMPLETED)
             ->visibleTo($user)
             ->whereBetween('sold_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->when($user->isOwner() && $request->filled('branch'), fn (Builder $q) => $q->where('sales.branch_id', $request->integer('branch')))
@@ -61,6 +62,7 @@ class SaleController extends Controller
             ->withQueryString();
 
         return view('sales.index', [
+            'cancelledView' => $cancelledView,
             'sales' => $sales,
             'summary' => $summary,
             'profit' => $profit,
@@ -78,9 +80,9 @@ class SaleController extends Controller
     public function show(Sale $sale): View
     {
         $this->authorize('view', $sale);
-        abort_if($sale->status !== Sale::STATUS_COMPLETED, 404);
+        abort_if($sale->status === Sale::STATUS_HOLD, 404);
 
-        $sale->load(['items.product.unit', 'payments.user', 'customer', 'branch', 'user', 'allocations.payment', 'returns']);
+        $sale->load(['items.product.unit', 'payments.user', 'customer', 'branch', 'user', 'allocations.payment', 'returns', 'canceller', 'cancelApprover']);
 
         return view('sales.show', ['sale' => $sale]);
     }
@@ -89,7 +91,7 @@ class SaleController extends Controller
     public function receipt(Sale $sale, BarcodeService $barcodes): View
     {
         $this->authorize('view', $sale);
-        abort_if($sale->status !== Sale::STATUS_COMPLETED, 404);
+        abort_if($sale->status === Sale::STATUS_HOLD, 404);
 
         return view('sales.receipt', [
             'sale' => $sale->load(['items', 'payments', 'customer', 'branch', 'user']),
@@ -101,7 +103,7 @@ class SaleController extends Controller
     public function pdf(Sale $sale, BarcodeService $barcodes): Response
     {
         $this->authorize('view', $sale);
-        abort_if($sale->status !== Sale::STATUS_COMPLETED, 404);
+        abort_if($sale->status === Sale::STATUS_HOLD, 404);
 
         $sale->load(['items', 'payments', 'customer', 'branch', 'user']);
         $barcode = 'data:image/svg+xml;base64,'.base64_encode($barcodes->svg($sale->invoice_no, 30));
@@ -109,6 +111,19 @@ class SaleController extends Controller
         return Pdf::loadView('sales.invoice-pdf', ['sale' => $sale, 'barcode' => $barcode])
             ->setPaper('a4')
             ->stream("{$sale->invoice_no}.pdf");
+    }
+
+    public function cancel(Request $request, Sale $sale, SaleService $service): RedirectResponse
+    {
+        $this->authorize('view', $sale);
+        $data = $request->validate([
+            'cancel_reason' => ['required', 'string', 'min:3', 'max:255'],
+            'pin' => ['nullable', 'digits_between:4,6'],
+        ], ['cancel_reason.required' => 'Write why the sale is being cancelled.']);
+
+        $service->cancel($sale, $request->user(), $data['cancel_reason'], $data['pin'] ?? null);
+
+        return back()->with('success', "{$sale->invoice_no} cancelled. Stock returned and payments refunded.");
     }
 
     public function receivePayment(Request $request, Sale $sale, SaleService $service): RedirectResponse

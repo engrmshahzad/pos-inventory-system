@@ -22,7 +22,7 @@
         <table>
             <tr><td>Return no</td><td class="right bold">{{ $return->return_no }}</td></tr>
             <tr><td>Original</td><td class="right">{{ $return->sale->invoice_no }}</td></tr>
-            <tr><td>Date</td><td class="right">{{ $return->returned_at->format('d/m/Y h:i A') }}</td></tr>
+            <tr><td>Date</td><td class="right">{{ fmtDate($return->returned_at, true) }}</td></tr>
             <tr><td>Customer</td><td class="right">{{ $return->customer?->name ?? 'Walk-in' }}</td></tr>
         </table>
         <hr>

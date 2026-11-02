@@ -26,7 +26,7 @@
             <td>
                 <div class="title">DELIVERY CHALLAN</div>
                 <div class="right"><strong>{{ $transfer->transfer_no }}</strong></div>
-                <div class="right muted">Date: {{ $transfer->transfer_date->format('d M Y') }} · Status: {{ $transfer->status_badge[0] }}</div>
+                <div class="right muted">Date: {{ fmtDate($transfer->transfer_date) }} · Status: {{ $transfer->status_badge[0] }}</div>
             </td>
         </tr>
     </table>

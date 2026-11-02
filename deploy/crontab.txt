@@ -1,0 +1,3 @@
+# crontab -e -u www-data   (VPS)   or cPanel → Cron Jobs (every minute)
+* * * * * cd /var/www/pos && php artisan schedule:run >> /dev/null 2>&1
+# The scheduler then runs: low-stock alerts 08:00, database backup 23:30, backup cleanup 23:45, old export cleanup daily.

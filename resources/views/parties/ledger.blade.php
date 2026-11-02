@@ -15,11 +15,11 @@
             <thead><tr><th>Date</th><th>Description</th><th>Reference</th><th class="text-right">Debit</th><th class="text-right">Credit</th><th class="text-right">Balance</th></tr></thead>
             <tbody>
                 @if ($from)
-                    <tr class="!bg-subtle/60"><td>{{ $from->format('d M Y') }}</td><td class="font-medium text-heading" colspan="4">Balance brought forward</td><td class="text-right font-semibold tabular text-heading">{{ money($ledger['opening'], true) }}</td></tr>
+                    <tr class="!bg-subtle/60"><td>{{ fmtDate($from) }}</td><td class="font-medium text-heading" colspan="4">Balance brought forward</td><td class="text-right font-semibold tabular text-heading">{{ money($ledger['opening'], true) }}</td></tr>
                 @endif
                 @forelse ($ledger['entries'] as $e)
                     <tr>
-                        <td class="whitespace-nowrap">{{ $e['date']->format('d M Y') }}<span class="block text-xs text-muted">{{ $e['date']->format('h:i A') }}</span></td>
+                        <td class="whitespace-nowrap">{{ fmtDate($e['date']) }}<span class="block text-xs text-muted">{{ $e['date']->format('h:i A') }}</span></td>
                         <td class="text-heading">{{ $e['description'] }}</td>
                         @php $openable = $e['url'] && (auth()->user()->isOwner() || $e['branch_id'] === null || $e['branch_id'] === auth()->user()->branch_id); @endphp
                         <td class="tabular">@if ($openable)<a href="{{ $e['url'] }}" class="font-medium text-primary hover:text-primary-hover">{{ $e['reference'] }}</a>@else{{ $e['reference'] }}@endif</td>
