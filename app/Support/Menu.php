@@ -23,8 +23,10 @@ class Menu
                 ['label' => 'Units', 'route' => 'units.index', 'icon' => 'ruler', 'can' => 'categories.manage'],
                 ['label' => 'Stock', 'route' => 'stock.index', 'icon' => 'boxes', 'can' => 'stock.view', 'active' => ['stock.index']],
                 ['label' => 'Stock History', 'route' => 'stock.movements', 'icon' => 'clock', 'can' => 'stock.view'],
+                ['label' => 'Transfers', 'route' => 'transfers.index', 'icon' => 'arrow-left-right', 'can' => 'transfers.view', 'active' => ['transfers.*']],
                 ['label' => 'Adjustments', 'route' => 'adjustments.index', 'icon' => 'sliders', 'can' => 'stock.adjust'],
-                ['label' => 'Transfers', 'route' => 'transfers.index', 'icon' => 'arrow-left-right', 'can' => 'transfers.view'],
+                ['label' => 'Stock Count', 'route' => 'stock-counts.index', 'icon' => 'list', 'can' => 'stock.adjust'],
+                ['label' => 'Expiry', 'route' => 'expiry.index', 'icon' => 'calendar', 'can' => 'stock.view'],
             ],
             'Sales' => [
                 ['label' => 'POS', 'route' => 'pos.index', 'icon' => 'shopping-cart', 'can' => 'pos.access', 'kbd' => 'F2'],

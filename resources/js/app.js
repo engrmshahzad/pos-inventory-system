@@ -129,7 +129,12 @@ window.chartTheme = () => {
     };
 };
 
-window.formatMoney = (value, symbol = 'Rs') => `${symbol} ${Math.round(Number(value) || 0).toLocaleString('en-US')}`;
+window.formatMoney = (value, symbol = 'Rs') => {
+    const n = Number(value) || 0;
+    const abs = Math.abs(n);
+    const text = Number.isInteger(Math.round(abs * 100) / 100) ? Math.round(abs).toLocaleString('en-US') : abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `${n < 0 ? '-' : ''}${symbol} ${text}`; // same shape as PHP money(): -Rs 1,050
+};
 
 /* Alpine component for any ApexCharts chart. Re-renders on theme change. */
 document.addEventListener('alpine:init', () => {

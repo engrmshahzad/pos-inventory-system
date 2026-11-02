@@ -7,7 +7,7 @@
 - [x] Phase 1
 - [x] Phase 2
 - [x] Phase 3
-- [ ] Phase 4
+- [x] Phase 4
 - [ ] Phase 5
 - [ ] Phase 6
 - [ ] Phase 7
@@ -27,5 +27,8 @@
 - Purchases via `PurchaseService` (received = stock + supplier payable; ordered waits for `receive()`; product cost = latest purchase cost). General payments via `PaymentService` (allocates oldest-first or manually via `payment_allocations`). Returns via `SaleReturnService` / `PurchaseReturnService`.
 - `customers.balance` / `suppliers.balance` are cached running balances; `LedgerService` rebuilds them from documents — keep both in sync in every new money flow (the tests compare them).
 - Customers and suppliers are shared by all branches; branch documents (sales, purchases, returns, payments) are branch-scoped via `visibleTo()` scopes and `Controller::ensureBranchAccess()`.
+- Transfers via `TransferService` (send = transfer_out at FROM, receive = transfer_in at TO, shortage recorded; owner-only cancel when sent returns stock). Adjustments via `AdjustmentService` (manager above `adjustment_approval_threshold` → pending; stock moves only on approve). Stock counts create one adjustment. In-app notifications: `NotifyService` + `AppNotification` (database channel, shown in the header bell).
+- DB is MariaDB 10.4: no native `uuid` column type — use `char(36)` (see the notifications migration).
+- Model gotcha: DB column defaults are not loaded back after `create()`; set `status` etc. explicitly when code checks them right away.
 - Blade gotcha: never put a directive directly after `</x-slot>` on one line (`</x-slot>@endif` breaks compilation) — use a new line.
 - Tests: `php artisan test` (SQLite in-memory). Demo logins: owner@pos.test / password.

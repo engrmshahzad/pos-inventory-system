@@ -150,7 +150,8 @@ class ProductController extends Controller
     /** JSON search used by Tom Select (barcodes, filters) and later by the POS. */
     public function search(Request $request): JsonResponse
     {
-        $branchId = currentBranchId();
+        // Owner may ask for any branch's stock (e.g. the sending branch of a transfer); others always get their own.
+        $branchId = $request->user()->isOwner() && $request->filled('branch') ? $request->integer('branch') : currentBranchId();
         $term = trim((string) $request->input('q'));
 
         $products = Product::query()

@@ -27,6 +27,10 @@ class SettingsSeeder extends Seeder
                 'receipt_footer' => 'Thank you for shopping with us! No return without receipt.',
                 'beep_on_scan' => '1',
             ],
+            'alerts' => [
+                'adjustment_approval_threshold' => '5000', // manager adjustments above this (Rs, at cost) need owner approval
+                'expiry_warning_days' => '30',
+            ],
         ];
 
         foreach ($defaults as $group => $items) {

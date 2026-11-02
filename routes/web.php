@@ -11,6 +11,11 @@ use App\Http\Controllers\Catalogue\UnitController;
 use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Finance\PaymentController;
+use App\Http\Controllers\Inventory\AdjustmentController;
+use App\Http\Controllers\Inventory\ExpiryController;
+use App\Http\Controllers\Inventory\StockCountController;
+use App\Http\Controllers\Inventory\TransferController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Parties\CustomerController;
 use App\Http\Controllers\Parties\SupplierController;
 use App\Http\Controllers\Purchases\PurchaseController;
@@ -67,6 +72,42 @@ Route::middleware('auth')->group(function () {
         Route::get('stock', [StockController::class, 'index'])->name('stock.index');
         Route::get('stock/movements', [StockController::class, 'movements'])->name('stock.movements');
     });
+
+    // Inventory: transfers
+    Route::get('transfers/suggestions', [TransferController::class, 'suggestions'])->middleware(['role:owner', 'permission:transfers.view'])->name('transfers.suggestions');
+    Route::get('transfers/create', [TransferController::class, 'create'])->middleware('permission:transfers.create')->name('transfers.create');
+    Route::post('transfers', [TransferController::class, 'store'])->middleware('permission:transfers.create')->name('transfers.store');
+    Route::middleware('permission:transfers.view')->group(function () {
+        Route::get('transfers', [TransferController::class, 'index'])->name('transfers.index');
+        Route::get('transfers/{transfer}', [TransferController::class, 'show'])->name('transfers.show');
+        Route::get('transfers/{transfer}/challan', [TransferController::class, 'challan'])->name('transfers.challan');
+        Route::post('transfers/{transfer}/send', [TransferController::class, 'send'])->name('transfers.send');
+        Route::post('transfers/{transfer}/receive', [TransferController::class, 'receive'])->name('transfers.receive');
+        Route::post('transfers/{transfer}/cancel', [TransferController::class, 'cancel'])->name('transfers.cancel');
+    });
+
+    // Inventory: adjustments, stock counts, expiry
+    Route::middleware('permission:stock.adjust')->group(function () {
+        Route::get('adjustments', [AdjustmentController::class, 'index'])->name('adjustments.index');
+        Route::get('adjustments/create', [AdjustmentController::class, 'create'])->name('adjustments.create');
+        Route::post('adjustments', [AdjustmentController::class, 'store'])->name('adjustments.store');
+        Route::get('adjustments/{adjustment}', [AdjustmentController::class, 'show'])->name('adjustments.show');
+
+        Route::get('stock-counts', [StockCountController::class, 'index'])->name('stock-counts.index');
+        Route::post('stock-counts', [StockCountController::class, 'store'])->name('stock-counts.store');
+        Route::get('stock-counts/{stockCount}', [StockCountController::class, 'show'])->name('stock-counts.show');
+        Route::put('stock-counts/{stockCount}', [StockCountController::class, 'update'])->name('stock-counts.update');
+        Route::post('stock-counts/{stockCount}/cancel', [StockCountController::class, 'cancel'])->name('stock-counts.cancel');
+        Route::get('stock-counts/{stockCount}/sheet', [StockCountController::class, 'sheet'])->name('stock-counts.sheet');
+    });
+    Route::middleware('permission:adjustments.approve')->group(function () {
+        Route::post('adjustments/{adjustment}/approve', [AdjustmentController::class, 'approve'])->name('adjustments.approve');
+        Route::post('adjustments/{adjustment}/reject', [AdjustmentController::class, 'reject'])->name('adjustments.reject');
+    });
+    Route::get('expiry', [ExpiryController::class, 'index'])->middleware('permission:stock.view')->name('expiry.index');
+
+    Route::get('notifications/{id}', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 
     // Sales: POS (full-screen) and its JSON endpoints
     Route::middleware('permission:pos.access')->prefix('pos')->name('pos.')->group(function () {
@@ -174,8 +215,6 @@ Route::middleware('auth')->group(function () {
     // Modules of later phases show a "Coming soon" page until they are built.
     $comingSoon = [
         // uri, route name, permission, label, phase, icon
-        ['transfers', 'transfers.index', 'transfers.view', 'Stock Transfers', 5, 'arrow-left-right'],
-        ['adjustments', 'adjustments.index', 'stock.adjust', 'Stock Adjustments', 5, 'sliders'],
         ['expenses', 'expenses.index', 'expenses.view', 'Expenses', 6, 'banknote'],
         ['reports', 'reports.index', 'reports.view', 'Reports', 6, 'bar-chart'],
         ['settings', 'settings.index', 'settings.manage', 'General Settings', 6, 'settings'],

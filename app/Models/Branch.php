@@ -20,7 +20,7 @@ class Branch extends Model
     /** Tables (added in later phases) whose rows make a branch undeletable. */
     public const TRANSACTION_TABLES = [
         'sales', 'purchases', 'sale_returns', 'purchase_returns',
-        'stock_transfers', 'stock_adjustments', 'expenses', 'payments', 'stock_movements',
+        'stock_adjustments', 'expenses', 'payments', 'stock_movements', 'stock_counts',
     ];
 
     /** Dot colours used in the branch switcher and badges. */
@@ -68,6 +68,8 @@ class Branch extends Model
             }
         }
 
-        return false;
+        // Transfers reference a branch on either side.
+        return Schema::hasTable('stock_transfers')
+            && DB::table('stock_transfers')->where('from_branch_id', $this->id)->orWhere('to_branch_id', $this->id)->exists();
     }
 }

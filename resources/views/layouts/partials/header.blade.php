@@ -69,25 +69,45 @@
             </x-button>
         @endcan
 
-        {{-- Notifications (real ones arrive in Phase 5) --}}
-        <x-dropdown width="w-80">
+        {{-- Notifications --}}
+        @php
+            $unread = $user->unreadNotifications()->count();
+            $recent = $user->notifications()->latest()->limit(8)->get();
+            $tints = ['primary' => 'bg-primary/10 text-primary', 'success' => 'bg-success/10 text-emerald-600', 'warning' => 'bg-warning/10 text-amber-600', 'danger' => 'bg-danger/10 text-red-600', 'info' => 'bg-info/10 text-sky-600'];
+        @endphp
+        <x-dropdown width="w-96">
             <x-slot name="trigger">
-                <button type="button" class="relative flex h-10 w-10 items-center justify-center rounded-lg text-body hover:bg-subtle hover:text-heading" aria-label="Notifications">
+                <button type="button" class="relative flex h-10 w-10 items-center justify-center rounded-lg text-body hover:bg-subtle hover:text-heading" aria-label="Notifications{{ $unread ? " ({$unread} unread)" : '' }}">
                     <x-icon name="bell" size="w-5 h-5" />
-                    <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger ring-2 ring-card"></span>
+                    @if ($unread)
+                        <span class="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-card">{{ $unread > 9 ? '9+' : $unread }}</span>
+                    @endif
                 </button>
             </x-slot>
             <x-slot name="content">
                 <div class="flex items-center justify-between px-3 py-2">
                     <p class="text-sm font-semibold text-heading">Notifications</p>
-                    <x-badge color="primary">New</x-badge>
+                    @if ($unread)
+                        <form method="POST" action="{{ route('notifications.read-all') }}">@csrf<button class="text-xs font-semibold text-primary hover:text-primary-hover">Mark all read</button></form>
+                    @endif
                 </div>
-                <div class="flex gap-3 rounded-lg p-3 hover:bg-subtle">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><x-icon name="sparkles" size="w-4 h-4" /></span>
-                    <div>
-                        <p class="text-sm font-medium text-heading">Welcome to {{ config('app.name') }}</p>
-                        <p class="text-xs text-muted">Low-stock and transfer alerts will appear here.</p>
-                    </div>
+                <div class="scrollbar-thin max-h-96 overflow-y-auto">
+                    @forelse ($recent as $n)
+                        <a href="{{ route('notifications.open', $n->id) }}" @class(['flex gap-3 rounded-lg p-3 transition hover:bg-subtle', 'bg-primary/[.04]' => ! $n->read_at])>
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg {{ $tints[$n->data['color'] ?? 'primary'] ?? $tints['primary'] }}"><x-icon :name="$n->data['icon'] ?? 'bell'" size="w-4 h-4" /></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="flex items-center gap-2 text-sm font-medium text-heading">{{ $n->data['title'] ?? 'Notification' }} @unless ($n->read_at)<span class="h-1.5 w-1.5 rounded-full bg-primary"></span>@endunless</span>
+                                <span class="block text-xs text-body">{{ $n->data['message'] ?? '' }}</span>
+                                <span class="block text-[11px] text-muted">{{ $n->created_at->diffForHumans() }}</span>
+                            </span>
+                        </a>
+                    @empty
+                        <div class="px-3 py-8 text-center">
+                            <span class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><x-icon name="bell" size="w-5 h-5" /></span>
+                            <p class="mt-2 text-sm font-medium text-heading">You're all caught up</p>
+                            <p class="text-xs text-muted">Transfers and approvals will show here.</p>
+                        </div>
+                    @endforelse
                 </div>
             </x-slot>
         </x-dropdown>

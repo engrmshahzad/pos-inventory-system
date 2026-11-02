@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             SalesSeeder::class,
             KhataSeeder::class,
+            InventoryControlSeeder::class,
         ]);
     }
 }
