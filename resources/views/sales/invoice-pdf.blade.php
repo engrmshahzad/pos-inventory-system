@@ -28,6 +28,9 @@
     <table class="header">
         <tr>
             <td style="width:60%">
+                @if (($logo = settings('business_logo')) && is_file($path = storage_path('app/public/'.$logo)) && ! str_ends_with($logo, '.svg'))
+                    <img src="data:{{ mime_content_type($path) }};base64,{{ base64_encode(file_get_contents($path)) }}" style="max-height:46px; margin-bottom:6px">
+                @endif
                 <div class="brand">{{ settings('business_name', config('app.name')) }}</div>
                 <div><strong>{{ $sale->branch->name }}</strong></div>
                 <div class="muted">{{ $sale->branch->address }}</div>
@@ -37,7 +40,7 @@
                 <div class="title">INVOICE</div>
                 <table class="meta">
                     <tr><td class="muted right">Invoice no</td><td class="right"><strong>{{ $sale->invoice_no }}</strong></td></tr>
-                    <tr><td class="muted right">Date</td><td class="right">{{ $sale->sold_at->format('d M Y, h:i A') }}</td></tr>
+                    <tr><td class="muted right">Date</td><td class="right">{{ fmtDate($sale->sold_at, true) }}</td></tr>
                     <tr><td class="muted right">Status</td><td class="right"><span class="badge {{ $sale->payment_status }}">{{ strtoupper($sale->payment_status) }}</span></td></tr>
                 </table>
             </td>

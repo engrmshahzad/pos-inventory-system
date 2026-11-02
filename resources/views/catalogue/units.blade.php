@@ -34,7 +34,7 @@
                     <td class="text-right tabular font-semibold text-heading">{{ $unit->products_count }}</td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
-                            <x-button size="icon-sm" variant="ghost" @click="edit(@js($payload))" aria-label="Edit {{ $unit->name }}"><x-icon name="pencil" size="w-4 h-4" /></x-button>
+                            <x-button size="icon-sm" variant="ghost" @click="edit({{ \Illuminate\Support\Js::from($payload) }})" aria-label="Edit {{ $unit->name }}"><x-icon name="pencil" size="w-4 h-4" /></x-button>
                             <form method="POST" action="{{ route('units.destroy', $unit) }}" data-confirm="Delete unit {{ $unit->name }}?">
                                 @csrf @method('DELETE')
                                 <x-button type="submit" size="icon-sm" variant="ghost-danger" aria-label="Delete {{ $unit->name }}"><x-icon name="trash" size="w-4 h-4" /></x-button>

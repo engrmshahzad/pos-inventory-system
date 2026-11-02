@@ -17,7 +17,7 @@
     <div class="flex h-header shrink-0 items-center gap-3 border-b border-white/5 px-5" :class="$store.sidebar.collapsed && 'lg:justify-center lg:px-0'">
         <x-logo />
         <div class="min-w-0" :class="$store.sidebar.collapsed && 'lg:hidden'">
-            <p class="truncate text-[15px] font-bold tracking-tight text-white">{{ config('app.name') }}</p>
+            <p class="truncate text-[15px] font-bold tracking-tight text-white">{{ settings('business_name', config('app.name')) }}</p>
             <p class="truncate text-[11px] text-slate-400">Inventory & POS</p>
         </div>
         <button type="button" class="ml-auto rounded-lg p-1.5 text-slate-400 hover:bg-white/5 hover:text-white lg:hidden" @click="$store.sidebar.mobileOpen = false" aria-label="Close menu">

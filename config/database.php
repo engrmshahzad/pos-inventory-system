@@ -64,6 +64,8 @@ return [
 
         'mariadb' => [
             'driver' => 'mariadb',
+            // Used by spatie/laravel-backup (XAMPP ships mysqldump here).
+            'dump' => ['dump_binary_path' => env('DB_DUMP_PATH', '/Applications/XAMPP/xamppfiles/bin/')],
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),

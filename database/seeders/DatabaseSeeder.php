@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             PurchaseSeeder::class,
             CustomerSeeder::class,
+            ExpenseSeeder::class,
             SalesSeeder::class,
             KhataSeeder::class,
             InventoryControlSeeder::class,

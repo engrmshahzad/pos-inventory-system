@@ -154,10 +154,15 @@ document.addEventListener('alpine:init', () => {
                 grid: { ...base.grid, ...(options.grid ?? {}) },
                 tooltip: { ...base.tooltip, ...(options.tooltip ?? {}) },
             };
+            if (options.moneyDonut) {
+                merged.tooltip.y = { formatter: (v) => window.formatMoney(v) };
+            }
             if (options.moneyTooltip) {
                 merged.tooltip.y = { formatter: (v) => window.formatMoney(v) };
-                merged.yaxis = { ...(options.yaxis ?? {}), labels: { formatter: (v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : v) } };
+                merged.yaxis = { ...(options.yaxis ?? {}), labels: { formatter: (v) => (Math.abs(v) >= 1000 ? `${Math.round(v / 1000)}k` : Math.round(v)) } };
             }
+            delete merged.moneyTooltip; // our own flags, not ApexCharts options
+            delete merged.moneyDonut;
             this.chart = new ApexCharts(this.$el, merged);
             this.chart.render();
         },

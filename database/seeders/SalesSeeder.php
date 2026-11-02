@@ -34,12 +34,14 @@ class SalesSeeder extends Seeder
             }
             Auth::setUser($cashier);
 
-            foreach (range(6, 0) as $daysAgo) {
+            foreach (range(59, 0) as $daysAgo) {
                 $day = Carbon::today()->subDays($daysAgo);
                 $register = $registers->open($cashier, $branch->id, 5000);
                 $register->update(['opened_at' => $day->copy()->setTime(9, 0)]);
 
-                foreach (range(1, mt_rand(4, 7)) as $n) {
+                // Busier recently and on weekends, so the charts have a shape.
+                $count = mt_rand(2, 4) + ($daysAgo < 14 ? 2 : 0) + ($day->isWeekend() ? 1 : 0);
+                foreach (range(1, $count) as $n) {
                     $items = $products->random(mt_rand(1, 4))->map(fn ($p) => [
                         'product_id' => $p->id,
                         'quantity' => $p->unit?->allow_decimal ? mt_rand(1, 5) / 2 + 0.5 : mt_rand(1, 3),
@@ -62,7 +64,10 @@ class SalesSeeder extends Seeder
                         continue; // e.g. an item ran out in this branch
                     }
 
-                    $at = $day->copy()->setTime(8 + $n * 2, mt_rand(0, 59)); // later invoices get later times
+                    $at = $day->copy()->setTime(min(22, 9 + $n * 2), mt_rand(0, 59)); // later invoices get later times
+                    if ($at->isFuture()) {
+                        $at = now()->subMinutes(($count - $n + 1) * 7); // today: keep every demo sale in the past
+                    }
                     $sale->update(['sold_at' => $at, 'created_at' => $at]);
                     $sale->payments()->update(['paid_at' => $at, 'created_at' => $at]);
                 }

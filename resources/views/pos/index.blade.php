@@ -7,8 +7,14 @@
         'storageKey' => "pos-cart-{$branch->id}-{$user->id}",
         'beep' => (bool) (int) settings('beep_on_scan', '1'),
         'allowNegative' => (bool) (int) settings('allow_negative_stock', '0'),
-        'canEditPrice' => $user->can('sales.edit_price'),
+        'canEditPrice' => $user->can('sales.edit_price') && (bool) (int) settings('allow_price_edit', '1'),
         'canDiscount' => $user->can('sales.discount'),
+        'maxDiscount' => $user->isCashier() ? (float) settings('cashier_max_discount', 5) : null,
+        'taxEnabled' => (bool) (int) settings('tax_enabled', '1'),
+        'taxInclusive' => settings('tax_mode', 'exclusive') === 'inclusive',
+        'defaultCustomer' => ($dc = settings('default_customer_id')) && ($c = \App\Models\Customer::active()->find($dc))
+            ? ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone, 'balance' => (float) $c->balance, 'balance_label' => money($c->balance), 'credit_limit' => (float) $c->credit_limit]
+            : null,
         'canAddCustomer' => $user->can('customers.create'),
         'heldCount' => $heldCount,
         'categories' => $categories,
@@ -168,7 +174,7 @@
                                     </template>
                                 </div>
                             </div>
-                            <p class="text-right text-sm font-bold tabular text-heading" x-text="money(lineNet(item) + lineTax(item))"></p>
+                            <p class="text-right text-sm font-bold tabular text-heading" x-text="money(lineTotal(item))"></p>
                         </div>
                         <div class="mt-2 flex items-center justify-between">
                             <div class="flex items-center rounded-lg border border-line">
@@ -223,6 +229,7 @@
                     <span class="text-3xl font-extrabold tabular text-primary dark:text-primary-300" x-text="money(grandTotal)"></span>
                 </div>
                 <p x-show="cart.hold_id" x-cloak class="mt-1 text-xs text-warning">Resumed from hold list</p>
+                <p x-show="overDiscountCap" x-cloak class="mt-1 text-xs font-semibold text-danger">Discount is above your {{ (float) settings('cashier_max_discount', 5) }}% limit. Ask a manager.</p>
             </div>
 
             {{-- Actions --}}

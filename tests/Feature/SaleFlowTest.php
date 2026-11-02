@@ -128,15 +128,48 @@ class SaleFlowTest extends TestCase
         $this->assertDatabaseCount('payments', 0);
     }
 
-    public function test_cashier_cannot_override_price_or_discount(): void
+    public function test_cashier_cannot_override_price_and_discount_is_capped(): void
     {
         $this->openShift();
 
+        // price override ignored (no sales.edit_price)
         $this->checkout([
-            'items' => [['product_id' => $this->tea->id, 'quantity' => 1, 'unit_price' => 1, 'discount' => 500]],
-            'discount_value' => 1000,
+            'items' => [['product_id' => $this->tea->id, 'quantity' => 1, 'unit_price' => 1]],
             'payments' => [['method' => 'cash', 'amount' => 1650]],
         ])->assertOk()->assertJsonPath('grand_total', 1650);
+
+        // above the 5% cashier cap → rejected, nothing saved
+        $this->checkout([
+            'items' => [['product_id' => $this->tea->id, 'quantity' => 1, 'discount' => 500]],
+            'payments' => [['method' => 'cash', 'amount' => 1650]],
+        ])->assertStatus(422)->assertJsonValidationErrors('discount_value');
+
+        // within the cap → allowed (5% of 3300 = 165)
+        $this->checkout([
+            'items' => [['product_id' => $this->tea->id, 'quantity' => 2]],
+            'discount_value' => 165,
+            'payments' => [['method' => 'cash', 'amount' => 3135]],
+        ])->assertOk()->assertJsonPath('grand_total', 3135);
+    }
+
+    public function test_tax_exclusive_inclusive_and_disabled(): void
+    {
+        $this->openShift();
+        $this->tea->update(['tax_percent' => 10]);
+
+        \App\Models\Setting::set('tax_mode', 'exclusive', 'tax');
+        $this->checkout(['items' => [['product_id' => $this->tea->id, 'quantity' => 1]], 'payments' => [['method' => 'cash', 'amount' => 1815]]])
+            ->assertOk()->assertJsonPath('grand_total', 1815);
+
+        \App\Models\Setting::set('tax_mode', 'inclusive', 'tax');
+        $this->checkout(['items' => [['product_id' => $this->tea->id, 'quantity' => 1]], 'payments' => [['method' => 'cash', 'amount' => 1650]]])
+            ->assertOk()->assertJsonPath('grand_total', 1650);
+        $this->assertEquals(150, \App\Models\Sale::latest('id')->value('tax_amount'));
+
+        \App\Models\Setting::set('tax_enabled', '0', 'tax');
+        $this->checkout(['items' => [['product_id' => $this->tea->id, 'quantity' => 1]], 'payments' => [['method' => 'cash', 'amount' => 1650]]])
+            ->assertOk()->assertJsonPath('grand_total', 1650);
+        $this->assertEquals(0, \App\Models\Sale::latest('id')->value('tax_amount'));
     }
 
     public function test_manager_can_discount(): void

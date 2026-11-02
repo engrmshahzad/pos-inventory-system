@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\Catalogue\BarcodeController;
@@ -8,8 +10,9 @@ use App\Http\Controllers\Catalogue\CategoryController;
 use App\Http\Controllers\Catalogue\ProductController;
 use App\Http\Controllers\Catalogue\ProductImportController;
 use App\Http\Controllers\Catalogue\UnitController;
-use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Finance\ExpenseCategoryController;
+use App\Http\Controllers\Finance\ExpenseController;
 use App\Http\Controllers\Finance\PaymentController;
 use App\Http\Controllers\Inventory\AdjustmentController;
 use App\Http\Controllers\Inventory\ExpiryController;
@@ -22,7 +25,9 @@ use App\Http\Controllers\Purchases\PurchaseController;
 use App\Http\Controllers\Purchases\PurchaseReturnController;
 use App\Http\Controllers\Sales\SaleReturnController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Sales\CashRegisterController;
 use App\Http\Controllers\Sales\PosController;
 use App\Http\Controllers\Sales\SaleController;
@@ -34,6 +39,7 @@ Route::redirect('/', '/dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->middleware('permission:dashboard.view')->name('dashboard');
+    Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->middleware('permission:dashboard.view')->name('dashboard.refresh');
     Route::post('/branch/switch', BranchSwitchController::class)->middleware('role:owner')->name('branch.switch');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -198,6 +204,36 @@ Route::middleware('auth')->group(function () {
         Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
     });
 
+    // Expenses
+    Route::middleware('permission:expenses.view')->group(function () {
+        Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+        Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    });
+    Route::middleware('permission:expenses.edit')->group(function () {
+        Route::post('expense-categories', [ExpenseCategoryController::class, 'store'])->name('expense-categories.store');
+        Route::put('expense-categories/{expenseCategory}', [ExpenseCategoryController::class, 'update'])->name('expense-categories.update');
+        Route::delete('expense-categories/{expenseCategory}', [ExpenseCategoryController::class, 'destroy'])->name('expense-categories.destroy');
+    });
+
+    // Reports
+    Route::middleware('permission:reports.view')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/{key}', [ReportController::class, 'show'])->name('reports.show');
+        Route::get('reports/{key}/export/{format}', [ReportController::class, 'export'])->whereIn('format', ['xlsx', 'pdf', 'print'])->name('reports.export');
+    });
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->middleware(['role:owner', 'permission:activity.view'])->name('activity.index');
+
+    // Settings & backups (owner)
+    Route::middleware(['role:owner', 'permission:settings.manage'])->group(function () {
+        Route::get('settings', [SettingsController::class, 'edit'])->name('settings.index');
+        Route::put('settings/{group}', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/backups', [BackupController::class, 'store'])->name('backups.store');
+        Route::get('settings/backups/{file}', [BackupController::class, 'download'])->name('backups.download');
+        Route::delete('settings/backups/{file}', [BackupController::class, 'destroy'])->name('backups.destroy');
+    });
+
     // Settings
     Route::middleware('permission:branches.manage')->group(function () {
         Route::resource('branches', BranchController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -212,22 +248,6 @@ Route::middleware('auth')->group(function () {
 
     Route::view('/ui-kit', 'ui-kit')->middleware(['role:owner', 'permission:ui_kit.view'])->name('ui-kit');
 
-    // Modules of later phases show a "Coming soon" page until they are built.
-    $comingSoon = [
-        // uri, route name, permission, label, phase, icon
-        ['expenses', 'expenses.index', 'expenses.view', 'Expenses', 6, 'banknote'],
-        ['reports', 'reports.index', 'reports.view', 'Reports', 6, 'bar-chart'],
-        ['settings', 'settings.index', 'settings.manage', 'General Settings', 6, 'settings'],
-    ];
-
-    foreach ($comingSoon as [$uri, $name, $permission, $label, $phase, $icon]) {
-        Route::get($uri, ComingSoonController::class)
-            ->middleware("permission:{$permission}")
-            ->defaults('module', $label)
-            ->defaults('phase', $phase)
-            ->defaults('icon', $icon)
-            ->name($name);
-    }
 });
 
 require __DIR__.'/auth.php';

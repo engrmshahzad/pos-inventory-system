@@ -82,7 +82,7 @@ class ProductSeeder extends Seeder
         foreach ($products as $i => [$name, $category, $brand, $unit, $cost, $price, $wholesale, $min, $qty, $expiry]) {
             $opening = [];
             foreach ($branches as $b => $branchId) {
-                $amount = (int) round($qty * ($multipliers[$b] ?? 1));
+                $amount = (int) round($qty * 3 * ($multipliers[$b] ?? 1)); // enough for ~60 days of demo sales
                 if ($i % 11 === 3 && $b === 2) {
                     $amount = 0;                       // out of stock in Sukkur
                 } elseif ($i % 7 === 5) {

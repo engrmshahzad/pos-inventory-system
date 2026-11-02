@@ -193,12 +193,14 @@ class SaleService
             throw ValidationException::withMessages(['items' => 'The cart is empty.']);
         }
 
-        $canEditPrice = $user->can('sales.edit_price');
+        $canEditPrice = $user->can('sales.edit_price') && (bool) (int) settings('allow_price_edit', '1');
         $canDiscount = $user->can('sales.discount');
+        $taxEnabled = (bool) (int) settings('tax_enabled', '1');
+        $taxInclusive = settings('tax_mode', 'exclusive') === 'inclusive';
 
         $products = Product::with('unit')->whereIn('id', $items->pluck('product_id'))->get()->keyBy('id');
 
-        $lines = $items->values()->map(function ($item, $index) use ($products, $canEditPrice, $canDiscount) {
+        $lines = $items->values()->map(function ($item, $index) use ($products, $canEditPrice, $canDiscount, $taxEnabled, $taxInclusive) {
             $product = $products->get($item['product_id']);
             $row = 'Line '.($index + 1);
 
@@ -221,8 +223,11 @@ class SaleService
             $gross = round($qty * $price, 2);
             $discount = $canDiscount ? min(max(0, round((float) ($item['discount'] ?? 0), 2)), $gross) : 0.0;
             $net = round($gross - $discount, 2);
-            $taxPercent = (float) $product->tax_percent;
-            $tax = round($net * $taxPercent / 100, 2);
+            $taxPercent = $taxEnabled ? (float) $product->tax_percent : 0.0;
+            // Inclusive: the price already contains tax, so extract it; exclusive: add it on top.
+            $tax = $taxInclusive
+                ? round($net - $net / (1 + $taxPercent / 100), 2)
+                : round($net * $taxPercent / 100, 2);
 
             return [
                 'product_id' => $product->id,
@@ -234,7 +239,7 @@ class SaleService
                 'discount' => $discount,
                 'tax_percent' => $taxPercent,
                 'tax_amount' => $tax,
-                'line_total' => round($net + $tax, 2),
+                'line_total' => $taxInclusive ? $net : round($net + $tax, 2),
             ];
         });
 
@@ -248,6 +253,8 @@ class SaleService
             : min($discountValue, $subtotal);
         $shipping = max(0, round((float) ($data['shipping'] ?? 0), 2));
 
+        $this->enforceDiscountCap($user, $lines, $discountAmount);
+
         return [
             'lines' => $lines->all(),
             'subtotal' => $subtotal,
@@ -258,6 +265,22 @@ class SaleService
             'shipping' => $shipping,
             'grand_total' => round($subtotal - $discountAmount + $tax + $shipping, 2),
         ];
+    }
+
+    /** Cashiers may discount at most `cashier_max_discount` % of the bill (line + bill discounts together). */
+    protected function enforceDiscountCap(User $user, Collection $lines, float $billDiscount): void
+    {
+        if (! $user->isCashier()) {
+            return;
+        }
+
+        $gross = $lines->sum(fn ($l) => $l['quantity'] * $l['unit_price']);
+        $discount = $lines->sum('discount') + $billDiscount;
+        $cap = (float) settings('cashier_max_discount', 5);
+
+        if ($gross > 0 && $discount > 0 && round($discount / $gross * 100, 2) > $cap) {
+            throw ValidationException::withMessages(['discount_value' => "Cashiers can give at most {$cap}% discount. Ask a manager for a bigger discount."]);
+        }
     }
 
     /**

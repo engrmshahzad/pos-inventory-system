@@ -29,8 +29,9 @@ class Permissions
         'settings.manage', 'activity.view', 'ui_kit.view', 'sales.cancel',
     ];
 
+    // Cashier discounts are capped by the `cashier_max_discount` setting (SaleService).
     public const CASHIER = [
-        'dashboard.view', 'pos.access', 'sales.view', 'sales.create', 'sales.return',
+        'dashboard.view', 'pos.access', 'sales.view', 'sales.create', 'sales.return', 'sales.discount',
         'customers.view', 'customers.create',
     ];
 

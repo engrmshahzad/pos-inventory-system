@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Run by `php artisan schedule:run` every minute (cron / Task Scheduler, set up in Phase 7).
+Schedule::command('pos:low-stock-alerts')->dailyAt('08:00');
+Schedule::command('backup:run --only-db --disable-notifications')->dailyAt('23:30');
+Schedule::command('backup:clean --disable-notifications')->dailyAt('23:45');

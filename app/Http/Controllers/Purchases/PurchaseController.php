@@ -31,7 +31,7 @@ class PurchaseController extends Controller
         $to = $request->filled('to') ? $request->date('to') : today();
 
         $query = Purchase::visibleTo($user)
-            ->whereBetween('purchase_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('purchase_date', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->when($user->isOwner() && $request->filled('branch'), fn (Builder $q) => $q->where('branch_id', $request->integer('branch')))
             ->when($request->filled('supplier'), fn (Builder $q) => $q->where('supplier_id', $request->integer('supplier')))
             ->when($request->filled('status'), fn (Builder $q) => $q->where('status', $request->input('status')))

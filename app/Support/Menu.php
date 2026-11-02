@@ -45,7 +45,8 @@ class Menu
                 ['label' => 'Expenses', 'route' => 'expenses.index', 'icon' => 'banknote', 'can' => 'expenses.view'],
             ],
             'Reports' => [
-                ['label' => 'Reports', 'route' => 'reports.index', 'icon' => 'bar-chart', 'can' => 'reports.view'],
+                ['label' => 'Reports', 'route' => 'reports.index', 'icon' => 'bar-chart', 'can' => 'reports.view', 'active' => ['reports.*']],
+                ['label' => 'Activity Log', 'route' => 'activity.index', 'icon' => 'clock', 'can' => 'activity.view'],
             ],
             'Settings' => [
                 ['label' => 'Branches', 'route' => 'branches.index', 'icon' => 'building', 'can' => 'branches.manage'],

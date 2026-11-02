@@ -62,7 +62,7 @@ export default (config) => ({
 
     /* ---------- persistence ---------- */
     emptyCart() {
-        return { items: [], customer: null, discount_type: 'amount', discount_value: 0, shipping: 0, note: '', hold_id: null };
+        return { items: [], customer: this.config.defaultCustomer ?? null, discount_type: 'amount', discount_value: 0, shipping: 0, note: '', hold_id: null };
     },
     loadCart() {
         try {
@@ -228,15 +228,26 @@ export default (config) => ({
     /* ---------- totals (preview; server recalculates) ---------- */
     lineGross(i) { return round2(Number(i.qty) * Number(i.price)); },
     lineNet(i) { return round2(this.lineGross(i) - Math.min(Number(i.discount) || 0, this.lineGross(i))); },
-    lineTax(i) { return round2(this.lineNet(i) * (Number(i.tax_percent) || 0) / 100); },
+    lineTax(i) {
+        const rate = this.config.taxEnabled ? (Number(i.tax_percent) || 0) : 0;
+        const net = this.lineNet(i);
+        return round2(this.config.taxInclusive ? net - net / (1 + rate / 100) : net * rate / 100);
+    },
+    lineTotal(i) { return this.config.taxInclusive ? this.lineNet(i) : round2(this.lineNet(i) + this.lineTax(i)); },
     get itemCount() { return this.cart.items.reduce((s, i) => s + Number(i.qty), 0); },
-    get subtotal() { return round2(this.cart.items.reduce((s, i) => s + this.lineNet(i), 0)); },
+    get subtotal() { return round2(this.cart.items.reduce((s, i) => s + this.lineTotal(i) - this.lineTax(i), 0)); },
     get tax() { return round2(this.cart.items.reduce((s, i) => s + this.lineTax(i), 0)); },
     get discountAmount() {
         const v = Math.max(0, Number(this.cart.discount_value) || 0);
         return this.cart.discount_type === 'percent' ? round2(this.subtotal * Math.min(v, 100) / 100) : Math.min(v, this.subtotal);
     },
     get grandTotal() { return round2(this.subtotal - this.discountAmount + this.tax + Math.max(0, Number(this.cart.shipping) || 0)); },
+    get overDiscountCap() {
+        if (this.config.maxDiscount === null) return false;
+        const gross = this.cart.items.reduce((s, i) => s + this.lineGross(i), 0);
+        const disc = this.cart.items.reduce((s, i) => s + Math.min(Number(i.discount) || 0, this.lineGross(i)), 0) + this.discountAmount;
+        return gross > 0 && disc / gross * 100 > this.config.maxDiscount + 0.001;
+    },
 
     /* ---------- customer ---------- */
     async openCustomer() {
@@ -278,6 +289,7 @@ export default (config) => ({
     /* ---------- payment ---------- */
     openPay() {
         if (!this.cart.items.length) { toast('warning', 'Add items to the bill first.'); return; }
+        if (this.overDiscountCap) { toast('warning', `Discount is above your ${this.config.maxDiscount}% limit.`); return; }
         this.payments = [{ method: 'cash', amount: this.grandTotal, reference: '' }];
         this.modal = 'pay';
         this.$nextTick(() => document.getElementById('payAmount0')?.select());

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Branch;
 use App\Models\InvoiceSequence;
+use App\Support\SettingsDefinition;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -31,7 +32,11 @@ class InvoiceNumberService
             $sequence->increment('last_number');
             $number = str_pad((string) $sequence->last_number, $pad, '0', STR_PAD_LEFT);
 
-            return $branch ? "{$branch->code}-{$type}-{$number}" : "{$type}-{$number}";
+            // The counter is keyed by the internal type; the printed prefix comes from Settings.
+            $key = SettingsDefinition::PREFIX_KEYS[$type] ?? null;
+            $prefix = $key ? strtoupper((string) settings($key, $type)) : $type;
+
+            return $branch ? "{$branch->code}-{$prefix}-{$number}" : "{$prefix}-{$number}";
         });
     }
 }

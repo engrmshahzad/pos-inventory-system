@@ -62,13 +62,21 @@ if (! function_exists('settings')) {
      */
     function settings(?string $key = null, mixed $default = null): mixed
     {
-        $all = Setting::allCached();
+        try {
+            $all = Setting::allCached();
+        } catch (\Throwable) {
+            $all = []; // e.g. before migrations have run
+        }
 
         if ($key === null) {
             return $all;
         }
 
-        return array_key_exists($key, $all) && $all[$key] !== null ? $all[$key] : $default;
+        if (array_key_exists($key, $all) && $all[$key] !== null && $all[$key] !== '') {
+            return $all[$key];
+        }
+
+        return $default ?? \App\Support\SettingsDefinition::default($key);
     }
 }
 
@@ -108,6 +116,20 @@ if (! function_exists('money')) {
         $formatted = formatNumber(abs($amount), $decimals);
 
         return ($amount < 0 ? '-' : '').settings('currency_symbol', 'Rs').' '.$formatted;
+    }
+}
+
+if (! function_exists('fmtDate')) {
+    /** Date in the format chosen in Settings (optionally with time). */
+    function fmtDate(mixed $date, bool $withTime = false): string
+    {
+        if (! $date) {
+            return '—';
+        }
+
+        $date = $date instanceof \DateTimeInterface ? $date : \Illuminate\Support\Carbon::parse($date);
+
+        return $date->format(settings('date_format', 'd M Y').($withTime ? ', h:i A' : ''));
     }
 }
 

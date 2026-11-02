@@ -67,6 +67,8 @@ class CashRegisterService
         $refunds = (float) $rows->where('method', 'cash')->where('type', 'refund')->sum('total');
 
         $sales = $register->sales()->where('status', 'completed');
+        $expenses = (float) \App\Models\Expense::where('cash_register_id', $register->id)->sum('amount');
+        $cashOut += $expenses;
 
         return [
             'opening_cash' => (float) $register->opening_cash,
@@ -79,6 +81,7 @@ class CashRegisterService
             'sales_total' => (float) (clone $sales)->sum('grand_total'),
             'credit_given' => (float) (clone $sales)->sum('due_amount'),
             'received_due' => (float) $rows->where('type', 'customer_receipt')->sum('total'),
+            'cash_expenses' => $expenses,
         ];
     }
 }

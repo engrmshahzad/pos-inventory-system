@@ -31,6 +31,9 @@
     <div class="no-print"><button onclick="window.print()">Print receipt</button></div>
     <div class="paper">
         <div class="center">
+            @if ((int) settings('receipt_show_logo', '1') && ($logo = settings('business_logo')))
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="" style="max-height:48px; max-width:60%; margin-bottom:4px; filter:grayscale(1)">
+            @endif
             <div class="shop">{{ settings('business_name', config('app.name')) }}</div>
             <div class="bold">{{ $sale->branch->name }}</div>
             @if ($sale->branch->address)<div class="muted">{{ $sale->branch->address }}</div>@endif
@@ -40,7 +43,7 @@
         <hr>
         <table>
             <tr><td>Invoice</td><td class="right bold">{{ $sale->invoice_no }}</td></tr>
-            <tr><td>Date</td><td class="right">{{ $sale->sold_at->format('d/m/Y h:i A') }}</td></tr>
+            <tr><td>Date</td><td class="right">{{ fmtDate($sale->sold_at, true) }}</td></tr>
             <tr><td>Cashier</td><td class="right">{{ $sale->user->name }}</td></tr>
             <tr><td>Customer</td><td class="right">{{ $sale->customer?->name ?? 'Walk-in' }}</td></tr>
             @if ($sale->customer?->phone)<tr><td></td><td class="right">{{ $sale->customer->phone }}</td></tr>@endif

@@ -54,7 +54,7 @@ class ProductController extends Controller
     public function create(): View
     {
         return view('products.form', $this->formData(new Product([
-            'is_active' => true, 'tax_percent' => 0, 'min_stock' => 5,
+            'is_active' => true, 'tax_percent' => (float) settings('tax_default_rate', 0), 'min_stock' => 5,
             'unit_id' => Unit::where('short_name', 'pcs')->value('id'),
         ])));
     }
