@@ -8,8 +8,8 @@
     @endphp
     <div x-data="{
             form: @js($initial), blank: @js($blank), removeAttachment: false, cat: { id: null, name: '', color: '#4F46E5', is_active: true },
-            create() { this.form = { ...this.blank }; this.removeAttachment = false; $refs.file.value = ''; $dispatch('open-drawer', 'expense-form') },
-            edit(e) { this.form = { ...e }; this.removeAttachment = false; $refs.file.value = ''; $dispatch('open-drawer', 'expense-form') },
+            create() { this.form = { ...this.blank }; this.removeAttachment = false; document.querySelector('input[type=file][name=attachment]').value = ''; $dispatch('open-drawer', 'expense-form') },
+            edit(e) { this.form = { ...e }; this.removeAttachment = false; document.querySelector('input[type=file][name=attachment]').value = ''; $dispatch('open-drawer', 'expense-form') },
             editCat(c) { this.cat = { ...c }; $dispatch('open-modal', 'category-form') },
         }" x-init="@if ($reopen) $nextTick(() => $dispatch('open-drawer', 'expense-form')) @endif">
 

@@ -44,12 +44,20 @@ class ReportController extends Controller
     /** Exports above this many rows are built in the background (queue) instead of during the request. */
     public const QUEUE_THRESHOLD = 2000;
 
+    /** Larger PDFs run out of memory; the user is pointed to Excel / Print instead. */
+    public const PDF_MAX_ROWS = 500;
+
     public function export(Request $request, string $key, string $format)
     {
         [$report, $ctx] = $this->prepare($request, $key);
         $result = $report->run($ctx);
         $data = $this->viewData($report, $ctx, $result);
         $file = $report->key.'-'.$ctx->from->format('Ymd').'-'.$ctx->to->format('Ymd');
+
+        // dompdf needs ~0.3 MB per table row; 1,500 rows exhausted a 512 MB limit.
+        if ($format === 'pdf' && $result->rows->count() > self::PDF_MAX_ROWS) {
+            return back()->with('error', number_format($result->rows->count()).' rows is too many for a PDF (max '.number_format(self::PDF_MAX_ROWS).'). Use Excel or Print, or choose a shorter date range.');
+        }
 
         activity('exported', "Exported report \"{$report->title}\" as {$format}");
 

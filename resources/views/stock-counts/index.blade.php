@@ -23,7 +23,7 @@
                 <td><x-badge :color="$color" dot>{{ $label }}</x-badge></td>
                 <td>
                     @if ($c->adjustment)
-                        <a href="{{ route('adjustments.show', $c->adjustment_id) }}" class="text-primary">{{ $c->adjustment->adjustment_no }}</a>
+                        <a href="{{ route('adjustments.show', $c->adjustment) }}" class="text-primary">{{ $c->adjustment->adjustment_no }}</a>
                         <span class="text-xs {{ (float) $c->adjustment->total_value < 0 ? 'text-danger' : 'text-emerald-600' }}">{{ money($c->adjustment->total_value) }}</span>
                     @elseif ($c->status === 'applied')<span class="text-muted">No differences</span>@else<span class="text-muted">—</span>@endif
                 </td>

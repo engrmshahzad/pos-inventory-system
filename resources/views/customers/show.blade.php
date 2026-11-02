@@ -13,6 +13,12 @@
                 @can('payments.create')<x-button :href="route('payments.create', ['type' => 'receive', 'customer' => $customer->id])" variant="success" icon="banknote">Receive payment</x-button>@endcan
             @endif
             @can('customers.edit')<x-button variant="outline" icon="pencil" @click="$dispatch('open-drawer', 'customer-form')">Edit</x-button>@endcan
+            @can('customers.delete')
+                <form method="POST" action="{{ route('customers.destroy', $customer) }}" data-confirm="Delete {{ $customer->name }}?" data-confirm-text="Their history stays in reports.">
+                    @csrf @method('DELETE')
+                    <x-button type="submit" variant="ghost-danger" icon="trash">Delete</x-button>
+                </form>
+            @endcan
         </x-page-header>
 
         {{-- Profile strip --}}

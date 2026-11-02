@@ -14,8 +14,8 @@
             form: @js($initial),
             blank: @js($blank),
             preview: null,
-            create() { this.form = { ...this.blank }; this.preview = null; this.$refs.avatar.value = ''; $dispatch('open-drawer', 'user-form') },
-            edit(user) { this.form = { ...user }; this.preview = user.avatar_url; this.$refs.avatar.value = ''; $dispatch('open-drawer', 'user-form') },
+            create() { this.form = { ...this.blank }; this.preview = null; document.querySelector('input[type=file][name=avatar]').value = ''; $dispatch('open-drawer', 'user-form') },
+            edit(user) { this.form = { ...user }; this.preview = user.avatar_url; document.querySelector('input[type=file][name=avatar]').value = ''; $dispatch('open-drawer', 'user-form') },
             pick(e) { const f = e.target.files[0]; if (f) { this.preview = URL.createObjectURL(f); this.form.remove_avatar = false } },
         }"
         x-init="@if ($reopen) $nextTick(() => $dispatch('open-drawer', 'user-form')) @endif">

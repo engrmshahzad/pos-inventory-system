@@ -13,6 +13,12 @@
                 @can('payments.create')<x-button :href="route('payments.create', ['type' => 'pay', 'supplier' => $supplier->id])" variant="success" icon="banknote">Pay supplier</x-button>@endcan
             @endif
             @can('suppliers.edit')<x-button variant="outline" icon="pencil" @click="$dispatch('open-drawer', 'supplier-form')">Edit</x-button>@endcan
+            @can('suppliers.delete')
+                <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}" data-confirm="Delete {{ $supplier->name }}?" data-confirm-text="Their history stays in reports.">
+                    @csrf @method('DELETE')
+                    <x-button type="submit" variant="ghost-danger" icon="trash">Delete</x-button>
+                </form>
+            @endcan
         </x-page-header>
 
         <div class="mb-6 flex gap-6 overflow-x-auto border-b border-line" role="tablist">

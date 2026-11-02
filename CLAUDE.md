@@ -10,7 +10,8 @@
 - [x] Phase 4
 - [x] Phase 5
 - [x] Phase 6
-- [ ] Phase 7
+- [ ] Phase 7 (built and committed; waiting for owner's test sign-off)
+- [x] QA audit (2 Nov 2026) — fixed: Brands/Users/Expenses Add+Edit drawers did not open (Alpine `$refs` across component scopes); Stock Count list 500 after applying a count with differences (`adjustment_id` → `stock_adjustment_id`); report PDF out of memory above ~1,000 rows (now capped at `ReportController::PDF_MAX_ROWS` = 500 with a message); Customer/Supplier Delete buttons added. Regression suite: `tests/Feature/ModuleAuditTest.php` (every page × role, CRUD create/update/invalid, deletes).
 
 ## Conventions (for future phases)
 - Branch scoping: always use `currentBranchId()` / `isOwner()` (app/helpers.php); never trust branch_id from the request for non-owners.
@@ -34,6 +35,7 @@
 - DB is MariaDB 10.4: no native `uuid` column type — use `char(36)` (see the notifications migration).
 - Model gotcha: DB column defaults are not loaded back after `create()`; set `status` etc. explicitly when code checks them right away.
 - Blade gotcha: `@js()` / `@json()` do NOT work inside a component tag's attributes (`<x-button @click="edit(@js($x))">` prints raw text). Use `{{ \Illuminate\Support\Js::from($x) }}` there, or put x-data on a plain element.
+- Alpine gotcha: `$refs` only sees refs inside the SAME component. x-modal, x-drawer and x-dropdown each have their own x-data, so page methods called from inside them (e.g. an Edit item in a "⋯" dropdown) cannot reach `$refs` of inputs in the modal — use `document.querySelector(...)` for those.
 - Blade gotcha: never put a directive directly after `</x-slot>` on one line (`</x-slot>@endif` breaks compilation) — use a new line.
 - Security: SecurityHeaders middleware; no SVG uploads; `App\Support\SafeCell::text()` for every exported text cell; `BranchIsolationTest` must stay green when adding modules (add the new documents to it).
 - Sale cancellation: `SaleService::cancel()` (owner/manager, or cashier with a manager PIN via `User::approverByPin()`).

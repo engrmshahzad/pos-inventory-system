@@ -7,8 +7,8 @@
 
     <div x-data="{
             form: @js($initial), blank: @js($blank), preview: null, removeLogo: false,
-            create() { this.form = { ...this.blank }; this.preview = null; this.removeLogo = false; this.$refs.logo.value = ''; $dispatch('open-modal', 'brand-form') },
-            edit(b) { this.form = { ...b }; this.preview = b.logo_url; this.removeLogo = false; this.$refs.logo.value = ''; $dispatch('open-modal', 'brand-form') },
+            create() { this.form = { ...this.blank }; this.preview = null; this.removeLogo = false; document.querySelector('input[type=file][name=logo]').value = ''; $dispatch('open-modal', 'brand-form') },
+            edit(b) { this.form = { ...b }; this.preview = b.logo_url; this.removeLogo = false; document.querySelector('input[type=file][name=logo]').value = ''; $dispatch('open-modal', 'brand-form') },
         }" x-init="@if ($reopen) $nextTick(() => $dispatch('open-modal', 'brand-form')) @endif">
 
         <x-page-header title="Brands" subtitle="Manufacturers and labels of your products." :breadcrumbs="['Inventory' => null, 'Brands' => null]">
