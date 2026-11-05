@@ -195,9 +195,12 @@
                         </div>
                         <p x-show="form.role === 'owner'" class="form-help -mt-2">Owners have access to all branches.</p>
                     @else
+                        @if (count($roles) > 1)
+                            <x-select name="role" label="Role" :options="collect($roles)->mapWithKeys(fn ($r) => [$r => ucfirst($r)])->all()" x-model="form.role" required />
+                        @endif
                         <div class="flex items-center gap-3 rounded-xl border border-line bg-subtle p-3.5 text-sm">
                             <x-icon name="info" size="w-4 h-4 text-info" />
-                            <span>New staff will be a <strong class="text-heading">cashier</strong> at <strong class="text-heading">{{ $actor->branch?->name }}</strong>.</span>
+                            <span>New staff will be a <strong class="text-heading" x-text="form.role">cashier</strong> at <strong class="text-heading">{{ $actor->branch?->name }}</strong>.</span>
                         </div>
                     @endif
 

@@ -65,14 +65,22 @@ class User extends Authenticatable
         return $this->hasRole('owner');
     }
 
+    /** owner / manager / cashier — custom roles report the type they are based on. */
+    public function roleType(): ?string
+    {
+        $role = $this->roles->first();
+
+        return $role ? ($role->base_type ?? $role->name) : null;
+    }
+
     public function isManager(): bool
     {
-        return $this->hasRole('manager');
+        return $this->roleType() === 'manager';
     }
 
     public function isCashier(): bool
     {
-        return $this->hasRole('cashier');
+        return $this->roleType() === 'cashier';
     }
 
     public function getRoleNameAttribute(): ?string

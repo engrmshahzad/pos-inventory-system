@@ -11,11 +11,13 @@
 - [x] Phase 5
 - [x] Phase 6
 - [ ] Phase 7 (built and committed; waiting for owner's test sign-off)
+- [x] Custom roles + activity log cleanup (2 Nov 2026): owner can add/edit/delete roles (built-in manager/cashier: permissions only, "Reset to default"; owner role fixed) and delete/select/clear activity log entries (password required for clear; a record of the clear is kept).
 - [x] QA audit (2 Nov 2026) — fixed: Brands/Users/Expenses Add+Edit drawers did not open (Alpine `$refs` across component scopes); Stock Count list 500 after applying a count with differences (`adjustment_id` → `stock_adjustment_id`); report PDF out of memory above ~1,000 rows (now capped at `ReportController::PDF_MAX_ROWS` = 500 with a message); Customer/Supplier Delete buttons added. Regression suite: `tests/Feature/ModuleAuditTest.php` (every page × role, CRUD create/update/invalid, deletes).
 
 ## Conventions (for future phases)
 - Branch scoping: always use `currentBranchId()` / `isOwner()` (app/helpers.php); never trust branch_id from the request for non-owners.
-- Permissions live in `app/Support/Permissions.php`; re-run `php artisan db:seed --class=RolePermissionSeeder` after adding any.
+- Permissions live in `app/Support/Permissions.php`; re-run `php artisan db:seed --class=RolePermissionSeeder` after adding any. The seeder gives new permissions to the owner only and never overwrites manager/cashier permissions edited on the Roles screen. `Permissions::OWNER_ONLY` can never be given to another role.
+- Roles: `App\Models\Role` (Spatie role + `base_type` owner/manager/cashier). Custom roles are manager-like or cashier-like. Always check data access with `isOwner()` / `isManager()` / `isCashier()` (they read the role's type) — never compare role names, custom roles have their own names.
 - Sidebar menu: `app/Support/Menu.php`. Later-phase pages are "Coming soon" routes in `routes/web.php` — replace them with real routes (keep the same route names).
 - Stock: change quantities ONLY through `App\Services\StockService` (`increase()` / `decrease()`); it row-locks branch_stock, writes stock_movements and throws `InsufficientStockException`. Wrap multi-line documents (sales, purchases, transfers) in your own `DB::transaction`.
 - New products go through `ProductService::create()` (creates branch_stock rows for every branch); new branches through `BranchService::create()` (rows for every product).

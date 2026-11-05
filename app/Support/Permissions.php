@@ -21,14 +21,17 @@ class Permissions
         'Suppliers' => ['suppliers.view', 'suppliers.create', 'suppliers.edit', 'suppliers.delete'],
         'Finance' => ['payments.view', 'payments.create', 'expenses.view', 'expenses.create', 'expenses.edit', 'expenses.delete'],
         'Reports' => ['reports.view', 'reports.profit'],
-        'System' => ['settings.manage', 'activity.view', 'ui_kit.view'],
+        'System' => ['settings.manage', 'activity.view', 'activity.delete', 'ui_kit.view'],
     ];
+
+    /** Never granted to any other role (the roles screen shows them locked). */
+    public const OWNER_ONLY = ['branches.manage', 'roles.manage', 'settings.manage', 'activity.view', 'activity.delete', 'ui_kit.view'];
 
     // Product delete is owner-only: the catalogue is shared by every branch (managers can deactivate).
     // Managers may cancel sales of their branch (SaleService); cashiers need a manager PIN.
     public const MANAGER_EXCLUDED = [
         'branches.manage', 'roles.manage', 'adjustments.approve', 'transfers.approve',
-        'settings.manage', 'activity.view', 'ui_kit.view', 'products.delete',
+        'settings.manage', 'activity.view', 'activity.delete', 'ui_kit.view', 'products.delete',
     ];
 
     // Cashier discounts are capped by the `cashier_max_discount` setting (SaleService).
@@ -41,6 +44,12 @@ class Permissions
     public static function flat(): array
     {
         return array_merge(...array_values(self::ALL));
+    }
+
+    /** Permissions the owner may give to other roles. @return list<string> */
+    public static function assignable(): array
+    {
+        return array_values(array_diff(self::flat(), self::OWNER_ONLY));
     }
 
     /** @return list<string> */

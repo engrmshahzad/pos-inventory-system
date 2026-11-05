@@ -229,6 +229,11 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/{key}/export/{format}', [ReportController::class, 'export'])->whereIn('format', ['xlsx', 'pdf', 'print'])->name('reports.export');
     });
     Route::get('activity-log', [ActivityLogController::class, 'index'])->middleware(['role:owner', 'permission:activity.view'])->name('activity.index');
+    Route::middleware(['role:owner', 'permission:activity.delete'])->group(function () {
+        Route::delete('activity-log/{log}', [ActivityLogController::class, 'destroy'])->name('activity.destroy');
+        Route::post('activity-log/delete-selected', [ActivityLogController::class, 'destroySelected'])->name('activity.destroy-selected');
+        Route::post('activity-log/clear', [ActivityLogController::class, 'clear'])->middleware('throttle:5,1')->name('activity.clear');
+    });
 
     // Settings & backups (owner)
     Route::middleware(['role:owner', 'permission:settings.manage'])->group(function () {
@@ -249,7 +254,13 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::patch('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
     });
-    Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:roles.manage')->name('roles.index');
+    Route::middleware(['role:owner', 'permission:roles.manage'])->group(function () {
+        Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::post('/roles/{role}/reset', [RoleController::class, 'reset'])->name('roles.reset');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+    });
 
     Route::view('/ui-kit', 'ui-kit')->middleware(['role:owner', 'permission:ui_kit.view'])->name('ui-kit');
 

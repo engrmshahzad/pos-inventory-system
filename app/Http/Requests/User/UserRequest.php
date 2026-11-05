@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,8 @@ class UserRequest extends FormRequest
         $data = ['is_active' => $this->boolean('is_active')];
 
         if (! $this->user()->isOwner()) {
-            $data['role'] = 'cashier';
+            // managers may give any cashier-type role, nothing higher
+            $data['role'] = Role::typeOf($this->input('role')) === 'cashier' ? $this->input('role') : 'cashier';
             $data['branch_id'] = $this->user()->branch_id;
         }
 
@@ -38,16 +40,17 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         $target = $this->route('user');
+        $type = Role::typeOf($this->input('role'));
 
         return [
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($target)],
             'phone' => ['nullable', 'string', 'max:30'],
             'password' => [$target ? 'nullable' : 'required', 'confirmed',
-                in_array($this->input('role'), ['owner', 'manager'], true) ? Password::defaults()->mixedCase() : Password::defaults()],
-            'role' => ['required', Rule::in(User::ROLES)],
+                in_array($type, ['owner', 'manager'], true) ? Password::defaults()->mixedCase() : Password::defaults()],
+            'role' => ['required', Rule::exists('roles', 'name')],
             'branch_id' => [
-                Rule::requiredIf(fn () => in_array($this->input('role'), ['manager', 'cashier'], true)),
+                Rule::requiredIf(fn () => in_array($type, ['manager', 'cashier'], true)),
                 'nullable',
                 Rule::exists('branches', 'id')->whereNull('deleted_at'),
             ],

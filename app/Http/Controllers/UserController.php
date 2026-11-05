@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UserRequest;
 use App\Models\Branch;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,7 +45,7 @@ class UserController extends Controller
         return view('users.index', [
             'users' => $users,
             'branches' => $actor->isOwner() ? Branch::orderBy('name')->get(['id', 'name', 'code']) : collect([$actor->branch]),
-            'roles' => $actor->isOwner() ? User::ROLES : ['cashier'],
+            'roles' => Role::query()->when(! $actor->isOwner(), fn ($q) => $q->where('base_type', 'cashier'))->orderBy('id')->pluck('name')->all(),
             'stats' => [
                 'total' => (clone $base)->count(),
                 'active' => (clone $base)->where('is_active', true)->count(),

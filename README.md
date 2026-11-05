@@ -13,7 +13,8 @@ Built with **Laravel 12**, MySQL/MariaDB, Blade, **Tailwind CSS 3**, **Alpine.js
 **Branches & users**
 - Unlimited branches with a 3-letter code used in every document number (`HYD-S-000001`)
 - Roles: **Owner** (all branches, branch switcher), **Manager** (own branch), **Cashier** (POS only) — enforced on every route and query
-- Login by email, 5 attempts/minute limit, strong passwords, idle auto-logout, activity log
+- Custom roles (e.g. "Senior Cashier", "Supervisor") with a permission matrix — each is manager-like or cashier-like for data access
+- Login by email, 5 attempts/minute limit, strong passwords, idle auto-logout, activity log (owner can delete entries or clear old history)
 
 **Catalogue & stock**
 - Products with SKU, EAN-13 barcodes (auto-generated), categories/sub-categories, brands, units (decimal or whole)
